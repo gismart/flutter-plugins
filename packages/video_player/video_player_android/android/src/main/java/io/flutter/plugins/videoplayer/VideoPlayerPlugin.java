@@ -13,6 +13,7 @@ import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugins.videoplayer.Messages.AndroidVideoPlayerApi;
+import io.flutter.plugins.videoplayer.Messages.AudioTrackMessage;
 import io.flutter.plugins.videoplayer.Messages.CreateMessage;
 import io.flutter.plugins.videoplayer.Messages.LoopingMessage;
 import io.flutter.plugins.videoplayer.Messages.MixWithOthersMessage;
@@ -173,6 +174,24 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
   public void setVolume(VolumeMessage arg) {
     VideoPlayer player = videoPlayers.get(arg.getTextureId());
     player.setVolume(arg.getVolume());
+  }
+
+  public AudioTrackMessage getAvailableAudioTracksList(TextureMessage arg) {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    AudioTrackMessage.Builder builder = new AudioTrackMessage.Builder();
+    builder.setAudioTrackNames(player.getAvailableAudioTracksList());
+    builder.setTextureId(arg.getTextureId());
+    return builder.build();
+  }
+
+  public void setActiveAudioTrack(AudioTrackMessage arg) {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    player.setActiveAudioTrack(arg.getAudioTrackNames().get(0).toString());
+  }
+
+  public void setActiveAudioTrackByIndex(AudioTrackMessage arg) {
+    VideoPlayer player = videoPlayers.get(arg.getTextureId());
+    player.setActiveAudioTrackByIndex(arg.getIndex().intValue());
   }
 
   public void setPlaybackSpeed(PlaybackSpeedMessage arg) {

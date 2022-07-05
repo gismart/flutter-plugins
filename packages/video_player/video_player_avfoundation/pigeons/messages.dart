@@ -31,6 +31,13 @@ class VolumeMessage {
   double volume;
 }
 
+class AudioTrackMessage {
+  AudioTrackMessage(this.textureId, this.audioTrackNames, this.index);
+  int textureId;
+  List<String?>? audioTrackNames;
+  int? index;
+}
+
 class PlaybackSpeedMessage {
   PlaybackSpeedMessage(this.textureId, this.speed);
   int textureId;
@@ -69,6 +76,12 @@ abstract class AVFoundationVideoPlayerApi {
   void setLooping(LoopingMessage msg);
   @ObjCSelector('setVolume:')
   void setVolume(VolumeMessage msg);
+  @ObjCSelector('getAvailableAudioTracksList:')
+  AudioTrackMessage getAvailableAudioTracksList(TextureMessage msg);
+  @ObjCSelector('setActiveAudioTrack:')
+  void setActiveAudioTrack(AudioTrackMessage msg);
+  @ObjCSelector('setActiveAudioTrackByIndex:')
+  void setActiveAudioTrackByIndex(AudioTrackMessage msg);
   @ObjCSelector('setPlaybackSpeed:')
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
   @ObjCSelector('play:')

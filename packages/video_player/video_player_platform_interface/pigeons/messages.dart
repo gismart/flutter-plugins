@@ -20,6 +20,12 @@ class VolumeMessage {
   double volume;
 }
 
+class AudioTrackMessage {
+  int textureId;
+  List<String> audioTrackNames;
+  int index;
+}
+
 class PlaybackSpeedMessage {
   int textureId;
   double speed;
@@ -50,6 +56,9 @@ abstract class VideoPlayerApi {
   void setLooping(LoopingMessage msg);
   void setVolume(VolumeMessage msg);
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
+  AudioTrackMessage getAvailableAudioTracksList(TextureMessage msg);
+  void setActiveAudioTrack(AudioTrackMessage msg);
+  void setActiveAudioTrackByIndex(AudioTrackMessage msg);
   void play(TextureMessage msg);
   PositionMessage position(TextureMessage msg);
   void seekTo(PositionMessage msg);
