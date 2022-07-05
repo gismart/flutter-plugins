@@ -572,6 +572,21 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     await _applyVolume();
   }
 
+  /// Returns a [List] of available audio tracks.
+  Future<List<dynamic>> getAvailableAudioTracksList() {
+    return _videoPlayerPlatform.getAvailableAudioTracksList(_textureId);
+  }
+
+  /// Sets the active audio track by it's [audioTrackName].
+  Future<void> setActiveAudioTrack(String audioTrackName) {
+    return _videoPlayerPlatform.setActiveAudioTrack(_textureId, audioTrackName);
+  }
+
+  /// Sets the active audio track by it's [index].
+  Future<void> setActiveAudioTrackByIndex(int index) {
+    return _videoPlayerPlatform.setActiveAudioTrackByIndex(_textureId, index);
+  }
+
   /// Sets the playback speed of [this].
   ///
   /// [speed] indicates a speed value with different platforms accepting

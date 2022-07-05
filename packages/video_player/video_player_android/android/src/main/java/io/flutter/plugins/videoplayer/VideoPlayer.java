@@ -28,12 +28,20 @@ import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
+import com.google.android.exoplayer2.source.TrackGroup;
+import com.google.android.exoplayer2.source.TrackGroupArray;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
+import com.google.android.exoplayer2.ui.DefaultTrackNameProvider;
+import com.google.android.exoplayer2.ui.TrackNameProvider;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.util.Util;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.view.TextureRegistry;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -48,6 +56,8 @@ final class VideoPlayer {
 
   private ExoPlayer exoPlayer;
 
+  private DefaultTrackSelector trackSelector;
+
   private Surface surface;
 
   private final TextureRegistry.SurfaceTextureEntry textureEntry;
@@ -60,6 +70,8 @@ final class VideoPlayer {
 
   private final VideoPlayerOptions options;
 
+  private final Context context;
+
   VideoPlayer(
       Context context,
       EventChannel eventChannel,
@@ -71,8 +83,10 @@ final class VideoPlayer {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
     this.options = options;
+    this.context = context;
 
-    ExoPlayer exoPlayer = new ExoPlayer.Builder(context).build();
+    trackSelector = new DefaultTrackSelector(context);
+    ExoPlayer exoPlayer = new ExoPlayer.Builder(context).setTrackSelector(trackSelector).build();
 
     Uri uri = Uri.parse(dataSource);
     DataSource.Factory dataSourceFactory;
@@ -102,6 +116,7 @@ final class VideoPlayer {
   // Constructor used to directly test members of this class.
   @VisibleForTesting
   VideoPlayer(
+      Context context,
       ExoPlayer exoPlayer,
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
@@ -110,6 +125,7 @@ final class VideoPlayer {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
     this.options = options;
+    this.context = context;
 
     setUpVideoPlayer(exoPlayer, eventSink);
   }
@@ -264,6 +280,82 @@ final class VideoPlayer {
   void setVolume(double value) {
     float bracketedValue = (float) Math.max(0.0, Math.min(1.0, value));
     exoPlayer.setVolume(bracketedValue);
+  }
+
+  ArrayList<String> getAvailableAudioTracksList() {
+    MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+    ArrayList<String> audioTrackNames = new ArrayList<String>();
+    if(mappedTrackInfo == null) {
+      return audioTrackNames;
+    }
+
+    TrackNameProvider provider = new DefaultTrackNameProvider(context.getResources());
+    for(int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
+      if(mappedTrackInfo.getRendererType(rendererIndex) != C.TRACK_TYPE_AUDIO)
+        continue;
+      TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
+      for(int trackGroupIndex = 0; trackGroupIndex < trackGroupArray.length; trackGroupIndex++) {
+        TrackGroup group = trackGroupArray.get(trackGroupIndex);
+        for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+          if ((mappedTrackInfo.getTrackSupport(rendererIndex, trackGroupIndex, trackIndex))
+                  == C.FORMAT_HANDLED) {
+            audioTrackNames.add(provider.getTrackName(group.getFormat(trackIndex)));
+          }
+        }
+      }
+    }
+    return audioTrackNames;
+  }
+
+  void setActiveAudioTrack(String audioName) {
+    MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+    TrackNameProvider provider = new DefaultTrackNameProvider(context.getResources());
+    for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
+      if (mappedTrackInfo.getRendererType(rendererIndex) != C.TRACK_TYPE_AUDIO)
+        continue;
+      TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
+      for (int trackGroupIndex = 0; trackGroupIndex < trackGroupArray.length; trackGroupIndex++) {
+        TrackGroup group = trackGroupArray.get(trackGroupIndex);
+        for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+          if (provider.getTrackName(group.getFormat(trackIndex)).equals(audioName)) {
+            applyAudioTrackSettings(rendererIndex, trackIndex, trackGroupIndex, mappedTrackInfo);
+            return;
+          }
+        }
+      }
+    }
+  }
+
+  void setActiveAudioTrackByIndex(int index) {
+    MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+    TrackNameProvider provider = new DefaultTrackNameProvider(context.getResources());
+    int audioIndex = 0;
+    for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
+      if (mappedTrackInfo.getRendererType(rendererIndex) != C.TRACK_TYPE_AUDIO)
+        continue;
+      TrackGroupArray trackGroupArray = mappedTrackInfo.getTrackGroups(rendererIndex);
+      for (int trackGroupIndex = 0; trackGroupIndex < trackGroupArray.length; trackGroupIndex++) {
+        TrackGroup group = trackGroupArray.get(trackGroupIndex);
+        for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+          if (audioIndex == index) {
+            applyAudioTrackSettings(rendererIndex, trackIndex, trackGroupIndex, mappedTrackInfo);
+            return;
+          }
+          audioIndex++;
+        }
+      }
+    }
+  }
+
+  private void applyAudioTrackSettings(int rendererIndex, int trackIndex, int trackGroupIndex, MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
+    DefaultTrackSelector.ParametersBuilder builder = trackSelector.buildUponParameters();
+    //builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO);
+    builder.clearSelectionOverrides(rendererIndex);
+    builder.setRendererDisabled(rendererIndex, false);
+    DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(trackGroupIndex, trackIndex);
+    //builder.addOverride(override);
+    builder.setSelectionOverride(rendererIndex, mappedTrackInfo.getTrackGroups(rendererIndex), override);
+    trackSelector.setParameters(builder.build());
   }
 
   void setPlaybackSpeed(double value) {

@@ -595,6 +595,52 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   [player setVolume:input.volume.doubleValue];
 }
 
+- (FLTAudioTrackMessage*)getAvailableAudioTracksList:(FLTTextureMessage *)input error:(FlutterError **)error {
+  FLTVideoPlayer* player = self.playersByTextureId[input.textureId];
+  AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+
+  NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+  NSMutableArray* audioTrackNames = [NSMutableArray array];
+
+  for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+    [audioTrackNames addObject: audioTrack.commonMetadata.firstObject.value];
+  }
+
+  FLTAudioTrackMessage* result = [FLTAudioTrackMessage makeWithTextureId:input.textureId audioTrackNames:audioTrackNames index:@0];
+  return result;
+}
+
+- (void)setActiveAudioTrack:(nonnull FLTAudioTrackMessage *)input error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  FLTVideoPlayer* player = self.playersByTextureId[input.textureId];
+  NSString* requestedAudioTrackName = input.audioTrackNames.firstObject;
+
+  AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+  NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+  for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+    if([audioTrack.commonMetadata.firstObject.value isEqual:requestedAudioTrackName]) {
+      [[player.player currentItem] selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
+      break;
+    }
+  }
+}
+
+- (void)setActiveAudioTrackByIndex:(nonnull FLTAudioTrackMessage *)input error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
+  FLTVideoPlayer* player = self.playersByTextureId[input.textureId];
+  int index = [input.index intValue];
+  int i = 0;
+
+  AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+  NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+
+  for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+    if(index == i) {
+      [[player.player currentItem] selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
+      break;
+    }
+    i += 1;
+  }
+}
+
 - (void)setPlaybackSpeed:(FLTPlaybackSpeedMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   [player setPlaybackSpeed:input.speed.doubleValue];

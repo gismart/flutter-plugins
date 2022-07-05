@@ -45,8 +45,10 @@ public class VideoPlayerTest {
 
   @Test
   public void sendInitializedSendsExpectedEvent_90RotationDegrees() {
+    Context testContext = ApplicationProvider.getApplicationContext();
     VideoPlayer videoPlayer =
         new VideoPlayer(
+            testContext,
             fakeExoPlayer,
             fakeEventChannel,
             fakeSurfaceTextureEntry,
@@ -73,8 +75,10 @@ public class VideoPlayerTest {
 
   @Test
   public void sendInitializedSendsExpectedEvent_270RotationDegrees() {
+    Context testContext = ApplicationProvider.getApplicationContext();
     VideoPlayer videoPlayer =
         new VideoPlayer(
+            testContext,
             fakeExoPlayer,
             fakeEventChannel,
             fakeSurfaceTextureEntry,
@@ -101,8 +105,10 @@ public class VideoPlayerTest {
 
   @Test
   public void sendInitializedSendsExpectedEvent_0RotationDegrees() {
+    Context testContext = ApplicationProvider.getApplicationContext();
     VideoPlayer videoPlayer =
         new VideoPlayer(
+            testContext,
             fakeExoPlayer,
             fakeEventChannel,
             fakeSurfaceTextureEntry,
@@ -129,8 +135,10 @@ public class VideoPlayerTest {
 
   @Test
   public void sendInitializedSendsExpectedEvent_180RotationDegrees() {
+    Context testContext = ApplicationProvider.getApplicationContext();
     VideoPlayer videoPlayer =
         new VideoPlayer(
+            testContext,
             fakeExoPlayer,
             fakeEventChannel,
             fakeSurfaceTextureEntry,

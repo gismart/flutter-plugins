@@ -93,6 +93,29 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<List<String?>> getAvailableAudioTracksList(int textureId) async {
+    final AudioTrackMessage audioTrackMessage = await _api.getAvailableAudioTracksList(
+      TextureMessage(textureId: textureId),
+    );
+    return audioTrackMessage.audioTrackNames!;
+  }
+
+  @override
+  Future<void> setActiveAudioTrack(int textureId, String audioTrackName) {
+    return _api.setActiveAudioTrack(
+      AudioTrackMessage(textureId: textureId)
+        ..audioTrackNames = <String>[audioTrackName],
+    );
+  }
+
+  @override
+  Future<void> setActiveAudioTrackByIndex(int textureId, int index) {
+    return _api.setActiveAudioTrackByIndex(
+      AudioTrackMessage(textureId: textureId)..index = index,
+    );
+  }
+
+  @override
   Future<void> setPlaybackSpeed(int textureId, double speed) {
     assert(speed > 0);
 
