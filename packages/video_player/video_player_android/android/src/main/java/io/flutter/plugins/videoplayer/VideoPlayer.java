@@ -33,8 +33,6 @@ import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
-import com.google.android.exoplayer2.ui.DefaultTrackNameProvider;
-import com.google.android.exoplayer2.ui.TrackNameProvider;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
@@ -289,7 +287,6 @@ final class VideoPlayer {
       return audioTrackNames;
     }
 
-    TrackNameProvider provider = new DefaultTrackNameProvider(context.getResources());
     for(int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
       if(mappedTrackInfo.getRendererType(rendererIndex) != C.TRACK_TYPE_AUDIO)
         continue;
@@ -299,7 +296,8 @@ final class VideoPlayer {
         for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
           if ((mappedTrackInfo.getTrackSupport(rendererIndex, trackGroupIndex, trackIndex))
                   == C.FORMAT_HANDLED) {
-            audioTrackNames.add(provider.getTrackName(group.getFormat(trackIndex)));
+            String name = getAudioTrackName(group.getFormat(trackIndex));
+            audioTrackNames.add(name);
           }
         }
       }
@@ -307,9 +305,8 @@ final class VideoPlayer {
     return audioTrackNames;
   }
 
-  void setActiveAudioTrack(String audioName) {
+  void setActiveAudioTrack(String audioTrackName) {
     MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-    TrackNameProvider provider = new DefaultTrackNameProvider(context.getResources());
     for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
       if (mappedTrackInfo.getRendererType(rendererIndex) != C.TRACK_TYPE_AUDIO)
         continue;
@@ -317,7 +314,7 @@ final class VideoPlayer {
       for (int trackGroupIndex = 0; trackGroupIndex < trackGroupArray.length; trackGroupIndex++) {
         TrackGroup group = trackGroupArray.get(trackGroupIndex);
         for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
-          if (provider.getTrackName(group.getFormat(trackIndex)).equals(audioName)) {
+          if (getAudioTrackName(group.getFormat(trackIndex)).equals(audioTrackName)) {
             applyAudioTrackSettings(rendererIndex, trackIndex, trackGroupIndex, mappedTrackInfo);
             return;
           }
@@ -328,7 +325,6 @@ final class VideoPlayer {
 
   void setActiveAudioTrackByIndex(int index) {
     MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-    TrackNameProvider provider = new DefaultTrackNameProvider(context.getResources());
     int audioIndex = 0;
     for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
       if (mappedTrackInfo.getRendererType(rendererIndex) != C.TRACK_TYPE_AUDIO)
@@ -345,6 +341,14 @@ final class VideoPlayer {
         }
       }
     }
+  }
+
+  private String getAudioTrackName(Format groupFormat) {
+    String name = groupFormat.language;
+    if(name == null) {
+      String languageCode = "und"; // as defined in ISO 639-2
+    }
+    return name;
   }
 
   private void applyAudioTrackSettings(int rendererIndex, int trackIndex, int trackGroupIndex, MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
