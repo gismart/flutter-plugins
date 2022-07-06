@@ -303,6 +303,9 @@ final class VideoPlayer {
       }
     }
 
+    // On iOS, if the amount of audio tracks is 1, and the only audio track has no language tag (undefined),
+    // it returns an empty array of audio tracks for some reason (yet still plays the audio).
+    // To match this behavior on Android, we use this hack.
     if(audioTrackNames.size() == 1) {
       if(audioTrackNames.get(0).equals("und")) {
         return new ArrayList<String>();
