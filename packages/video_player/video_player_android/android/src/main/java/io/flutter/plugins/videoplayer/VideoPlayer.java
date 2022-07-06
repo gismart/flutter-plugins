@@ -346,7 +346,7 @@ final class VideoPlayer {
   private String getAudioTrackName(Format groupFormat) {
     String name = groupFormat.language;
     if(name == null) {
-      String languageCode = "und"; // as defined in ISO 639-2
+      name = "und"; // as defined in ISO 639-2
     }
     return name;
   }

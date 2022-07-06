@@ -603,7 +603,12 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   NSMutableArray* audioTrackNames = [NSMutableArray array];
 
   for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-    [audioTrackNames addObject: audioTrack.extendedLanguageTag];
+    NSString* audioTrackLanguageTag = audioTrack.extendedLanguageTag;
+    if (audioTrackLanguageTag != nil) {
+      [audioTrackNames addObject: audioTrackLanguageTag];
+    } else {
+      [audioTrackNames addObject: @"und"]; // as defined in ISO 639-2
+    }
   }
 
   FLTAudioTrackMessage* result = [FLTAudioTrackMessage makeWithTextureId:input.textureId audioTrackNames:audioTrackNames index:@0];
