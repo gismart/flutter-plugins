@@ -302,6 +302,12 @@ final class VideoPlayer {
         }
       }
     }
+
+    if(audioTrackNames.size() == 1) {
+      if(audioTrackNames.get(0).equals("und")) {
+        return new ArrayList<String>();
+      }
+    }
     return audioTrackNames;
   }
 
