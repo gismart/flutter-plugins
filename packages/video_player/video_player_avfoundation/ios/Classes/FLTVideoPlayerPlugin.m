@@ -603,7 +603,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   NSMutableArray* audioTrackNames = [NSMutableArray array];
 
   for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-    NSString* audioTrackLanguageTag = audioTrack.extendedLanguageTag;
+    NSString* audioTrackLanguageTag = audioTrack.locale.languageCode;
     if (audioTrackLanguageTag != nil) {
       [audioTrackNames addObject: audioTrackLanguageTag];
     } else {
@@ -622,7 +622,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
   AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
   NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
   for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-    if([audioTrack.extendedLanguageTag isEqual:requestedAudioTrackName]) {
+    if([audioTrack.locale.languageCode isEqual:requestedAudioTrackName]) {
       [[player.player currentItem] selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
       break;
     }
