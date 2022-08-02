@@ -96,7 +96,7 @@ static void *rateContext = &rateContext;
             context:playbackBufferFullContext];
   [_player addObserver:self
          forKeyPath:@"rate"
-            options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
+            options:NSKeyValueObservingOptionNew
             context:rateContext];
 
   // Add an observer that will respond to itemDidPlayToEndTime
@@ -301,7 +301,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
       _eventSink(@{@"event" : @"bufferingEnd"});
     }
   } else if (context == rateContext) {
-    if (_isInitialized && _isPlaying && _player.rate != _internalPlaybackSpeed && _player.rate != 0.0) {
+    if (_isPlaying && _player.rate != 0.0 && _player.rate != _internalPlaybackSpeed) {
       // AVPlayer's rate gets reset on HLS bitrate changes, and also on .seek calls
       // So we listen to rate changes, and then force the playback rate back to our intended rate
       // In some rare cases this causes a very small audio hiccup,
