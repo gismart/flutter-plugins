@@ -43,6 +43,7 @@
 @property(nonatomic, readonly) BOOL disposed;
 @property(nonatomic, readonly) BOOL isPlaying;
 @property(nonatomic) BOOL isLooping;
+@property(nonatomic) double internalPlaybackSpeed;
 @property(nonatomic, readonly) BOOL isInitialized;
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
@@ -56,6 +57,7 @@ static void *durationContext = &durationContext;
 static void *playbackLikelyToKeepUpContext = &playbackLikelyToKeepUpContext;
 static void *playbackBufferEmptyContext = &playbackBufferEmptyContext;
 static void *playbackBufferFullContext = &playbackBufferFullContext;
+static void *rateContext = &rateContext;
 
 @implementation FLTVideoPlayer
 - (instancetype)initWithAsset:(NSString *)asset frameUpdater:(FLTFrameUpdater *)frameUpdater {
@@ -92,6 +94,10 @@ static void *playbackBufferFullContext = &playbackBufferFullContext;
          forKeyPath:@"playbackBufferFull"
             options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew
             context:playbackBufferFullContext];
+  [_player addObserver:self
+         forKeyPath:@"rate"
+            options:NSKeyValueObservingOptionNew
+            context:rateContext];
 
   // Add an observer that will respond to itemDidPlayToEndTime
   [[NSNotificationCenter defaultCenter] addObserver:self
@@ -294,6 +300,15 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
     if (_eventSink != nil) {
       _eventSink(@{@"event" : @"bufferingEnd"});
     }
+  } else if (context == rateContext) {
+    if (_isPlaying && _player.rate != 0.0 && _player.rate != _internalPlaybackSpeed) {
+      // AVPlayer's rate gets reset on HLS bitrate changes, and also on .seek calls
+      // So we listen to rate changes, and then force the playback rate back to our intended rate
+      // In some rare cases this causes a very small audio hiccup,
+      // but there seems to be no better solution at this time
+      // See: https://github.com/flutter/flutter/issues/71264
+      [self setPlaybackSpeed:_internalPlaybackSpeed];
+    }
   }
 }
 
@@ -418,6 +433,7 @@ NS_INLINE CGFloat radiansToDegrees(CGFloat radians) {
     return;
   }
 
+  [self setInternalPlaybackSpeed:speed];
   _player.rate = speed;
 }
 
