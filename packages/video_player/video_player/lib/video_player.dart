@@ -245,12 +245,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Constructs a [VideoPlayerController] playing a video from a file.
   ///
-  /// This will load the file from the file-URI given by:
-  /// `'file://${file.path}'`.
+  /// This will load the file from a file:// URI constructed from [file]'s path.
   VideoPlayerController.file(File file,
       {Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
       : _closedCaptionFileFuture = closedCaptionFile,
-        dataSource = 'file://${file.path}',
+        dataSource = Uri.file(file.absolute.path).toString(),
         dataSourceType = DataSourceType.file,
         package = null,
         formatHint = null,
@@ -453,7 +452,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// finished.
   Future<void> play() async {
     if (value.position == value.duration) {
-      await seekTo(const Duration());
+      await seekTo(Duration.zero);
     }
     value = value.copyWith(isPlaying: true);
     await _applyPlayPause();
@@ -542,7 +541,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (_isDisposed) {
       return null;
     }
-    return await _videoPlayerPlatform.getPosition(_textureId);
+    return _videoPlayerPlatform.getPosition(_textureId);
   }
 
   /// Sets the video's current timestamp to be at [moment]. The next
@@ -556,8 +555,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
     if (position > value.duration) {
       position = value.duration;
-    } else if (position < const Duration()) {
-      position = const Duration();
+    } else if (position < Duration.zero) {
+      position = Duration.zero;
     }
     await _videoPlayerPlatform.seekTo(_textureId, position);
     _updatePosition(position);
@@ -814,7 +813,7 @@ class _VideoPlayerWithRotation extends StatelessWidget {
 /// Used to configure the [VideoProgressIndicator] widget's colors for how it
 /// describes the video's status.
 ///
-/// The widget uses default colors that are customizeable through this class.
+/// The widget uses default colors that are customizable through this class.
 class VideoProgressColors {
   /// Any property can be set to any color. They each have defaults.
   ///
@@ -1020,7 +1019,6 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
       );
     } else {
       progressIndicator = LinearProgressIndicator(
-        value: null,
         valueColor: AlwaysStoppedAnimation<Color>(colors.playedColor),
         backgroundColor: colors.backgroundColor,
       );

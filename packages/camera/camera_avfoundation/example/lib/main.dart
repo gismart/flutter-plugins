@@ -41,11 +41,8 @@ IconData getCameraLensIcon(CameraLensDirection direction) {
 }
 
 void _logError(String code, String? message) {
-  if (message != null) {
-    print('Error: $code\nError Message: $message');
-  } else {
-    print('Error: $code');
-  }
+  // ignore: avoid_print
+  print('Error: $code${message == null ? '' : '\nError Message: $message'}');
 }
 
 class _CameraExampleHomeState extends State<CameraExampleHome>
@@ -161,7 +158,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
           Padding(
             padding: const EdgeInsets.all(5.0),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
               children: <Widget>[
                 _cameraTogglesRowWidget(),
                 _thumbnailWidget(),
@@ -274,7 +270,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       children: <Widget>[
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             IconButton(
               icon: const Icon(Icons.flash_on),
@@ -328,7 +323,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
       child: ClipRect(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          mainAxisSize: MainAxisSize.max,
           children: <Widget>[
             IconButton(
               icon: const Icon(Icons.flash_off),
@@ -374,11 +368,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   Widget _exposureModeControlRowWidget() {
     final ButtonStyle styleAuto = TextButton.styleFrom(
+      // TODO(darrenaustin): Migrate to new API once it lands in stable: https://github.com/flutter/flutter/issues/105724
+      // ignore: deprecated_member_use
       primary: controller?.value.exposureMode == ExposureMode.auto
           ? Colors.orange
           : Colors.blue,
     );
     final ButtonStyle styleLocked = TextButton.styleFrom(
+      // TODO(darrenaustin): Migrate to new API once it lands in stable: https://github.com/flutter/flutter/issues/105724
+      // ignore: deprecated_member_use
       primary: controller?.value.exposureMode == ExposureMode.locked
           ? Colors.orange
           : Colors.blue,
@@ -396,7 +394,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   TextButton(
                     style: styleAuto,
@@ -435,7 +432,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   Text(_minAvailableExposureOffset.toString()),
                   Slider(
@@ -460,11 +456,15 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
   Widget _focusModeControlRowWidget() {
     final ButtonStyle styleAuto = TextButton.styleFrom(
+      // TODO(darrenaustin): Migrate to new API once it lands in stable: https://github.com/flutter/flutter/issues/105724
+      // ignore: deprecated_member_use
       primary: controller?.value.focusMode == FocusMode.auto
           ? Colors.orange
           : Colors.blue,
     );
     final ButtonStyle styleLocked = TextButton.styleFrom(
+      // TODO(darrenaustin): Migrate to new API once it lands in stable: https://github.com/flutter/flutter/issues/105724
+      // ignore: deprecated_member_use
       primary: controller?.value.focusMode == FocusMode.locked
           ? Colors.orange
           : Colors.blue,
@@ -482,7 +482,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                mainAxisSize: MainAxisSize.max,
                 children: <Widget>[
                   TextButton(
                     style: styleAuto,
@@ -520,7 +519,6 @@ class _CameraExampleHomeState extends State<CameraExampleHome>
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      mainAxisSize: MainAxisSize.max,
       children: <Widget>[
         IconButton(
           icon: const Icon(Icons.camera_alt),

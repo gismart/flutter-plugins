@@ -5,12 +5,14 @@
 import 'dart:async';
 import 'dart:math';
 
+// TODO(a14n): remove this import once Flutter 3.1 or later reaches stable (including flutter/flutter#106316)
+// ignore: unnecessary_import
 import 'package:flutter/painting.dart' show Color;
-
-import 'package:webview_flutter_wkwebview/src/foundation/foundation.dart';
+import 'package:flutter/services.dart';
 
 import '../common/instance_manager.dart';
 import '../common/web_kit.pigeon.dart';
+import '../foundation/foundation.dart';
 import '../web_kit/web_kit.dart';
 import 'ui_kit.dart';
 
@@ -18,9 +20,16 @@ import 'ui_kit.dart';
 class UIScrollViewHostApiImpl extends UIScrollViewHostApi {
   /// Constructs a [UIScrollViewHostApiImpl].
   UIScrollViewHostApiImpl({
-    super.binaryMessenger,
+    this.binaryMessenger,
     InstanceManager? instanceManager,
-  }) : instanceManager = instanceManager ?? NSObject.globalInstanceManager;
+  })  : instanceManager = instanceManager ?? NSObject.globalInstanceManager,
+        super(binaryMessenger: binaryMessenger);
+
+  /// Sends binary data across the Flutter platform barrier.
+  ///
+  /// If it is null, the default BinaryMessenger will be used which routes to
+  /// the host platform.
+  final BinaryMessenger? binaryMessenger;
 
   /// Maintains instances stored to communicate with Objective-C objects.
   final InstanceManager instanceManager;
@@ -75,9 +84,16 @@ class UIScrollViewHostApiImpl extends UIScrollViewHostApi {
 class UIViewHostApiImpl extends UIViewHostApi {
   /// Constructs a [UIViewHostApiImpl].
   UIViewHostApiImpl({
-    super.binaryMessenger,
+    this.binaryMessenger,
     InstanceManager? instanceManager,
-  }) : instanceManager = instanceManager ?? NSObject.globalInstanceManager;
+  })  : instanceManager = instanceManager ?? NSObject.globalInstanceManager,
+        super(binaryMessenger: binaryMessenger);
+
+  /// Sends binary data across the Flutter platform barrier.
+  ///
+  /// If it is null, the default BinaryMessenger will be used which routes to
+  /// the host platform.
+  final BinaryMessenger? binaryMessenger;
 
   /// Maintains instances stored to communicate with Objective-C objects.
   final InstanceManager instanceManager;

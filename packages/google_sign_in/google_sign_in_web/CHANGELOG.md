@@ -1,3 +1,13 @@
+## NEXT
+
+* Updates code for `no_leading_underscores_for_local_identifiers` lint.
+* Updates minimum Flutter version to 2.10.
+
+## 0.10.2
+
+* Migrates to new platform-interface `initWithParams` method.
+* Throws when unsupported `serverClientId` option is provided.
+
 ## 0.10.1+3
 
 * Updates references to the obsolete master branch.

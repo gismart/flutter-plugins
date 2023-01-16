@@ -25,6 +25,24 @@ void main() {
     expect(CameraPlatform.instance, isA<AndroidCamera>());
   });
 
+  test('registration does not set message handlers', () async {
+    AndroidCamera.registerWith();
+
+    // Setting up a handler requires bindings to be initialized, and since
+    // registerWith is called very early in initialization the bindings won't
+    // have been initialized. While registerWith could intialize them, that
+    // could slow down startup, so instead the handler should be set up lazily.
+    final ByteData? response = await TestDefaultBinaryMessengerBinding
+        .instance!.defaultBinaryMessenger
+        .handlePlatformMessage(
+            AndroidCamera.deviceEventChannelName,
+            const StandardMethodCodec().encodeMethodCall(const MethodCall(
+                'orientation_changed',
+                <String, Object>{'orientation': 'portraitDown'})),
+            (ByteData? data) {});
+    expect(response, null);
+  });
+
   group('Creation, Initialization & Disposal Tests', () {
     test('Should send creation data and receive back a camera id', () async {
       // Arrange
@@ -402,12 +420,14 @@ void main() {
       // Emit test events
       const DeviceOrientationChangedEvent event =
           DeviceOrientationChangedEvent(DeviceOrientation.portraitUp);
-      await camera.handleDeviceMethodCall(
-          MethodCall('orientation_changed', event.toJson()));
-      await camera.handleDeviceMethodCall(
-          MethodCall('orientation_changed', event.toJson()));
-      await camera.handleDeviceMethodCall(
-          MethodCall('orientation_changed', event.toJson()));
+      for (int i = 0; i < 3; i++) {
+        await TestDefaultBinaryMessengerBinding.instance!.defaultBinaryMessenger
+            .handlePlatformMessage(
+                AndroidCamera.deviceEventChannelName,
+                const StandardMethodCodec().encodeMethodCall(
+                    MethodCall('orientation_changed', event.toJson())),
+                null);
+      }
 
       // Assert
       expect(await streamQueue.next, event);
@@ -567,6 +587,7 @@ void main() {
         isMethodCall('startVideoRecording', arguments: <String, Object?>{
           'cameraId': cameraId,
           'maxVideoDuration': null,
+          'enableStream': false,
         }),
       ]);
     });
@@ -589,7 +610,33 @@ void main() {
       expect(channel.log, <Matcher>[
         isMethodCall('startVideoRecording', arguments: <String, Object?>{
           'cameraId': cameraId,
-          'maxVideoDuration': 10000
+          'maxVideoDuration': 10000,
+          'enableStream': false,
+        }),
+      ]);
+    });
+
+    test(
+        'Should pass enableStream if callback is passed when starting recording a video',
+        () async {
+      // Arrange
+      final MethodChannelMock channel = MethodChannelMock(
+        channelName: _channelName,
+        methods: <String, dynamic>{'startVideoRecording': null},
+      );
+
+      // Act
+      await camera.startVideoCapturing(
+        VideoCaptureOptions(cameraId,
+            streamCallback: (CameraImageData imageData) {}),
+      );
+
+      // Assert
+      expect(channel.log, <Matcher>[
+        isMethodCall('startVideoRecording', arguments: <String, Object?>{
+          'cameraId': cameraId,
+          'maxVideoDuration': null,
+          'enableStream': true,
         }),
       ]);
     });
@@ -941,7 +988,6 @@ void main() {
           'setZoomLevel': PlatformException(
             code: 'ZOOM_ERROR',
             message: 'Illegal zoom error',
-            details: null,
           )
         },
       );

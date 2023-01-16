@@ -1,3 +1,38 @@
+## 0.2.3+7
+
+* Updates code for new analysis options.
+
+## 0.2.3+6
+
+* Updates android gradle plugin to 7.3.1.
+
+## 0.2.3+5
+
+* Updates imports for `prefer_relative_imports`.
+
+## 0.2.3+4
+
+* Updates minimum Flutter version to 2.10.
+* Adds IMMEDIATE_AND_CHARGE_FULL_PRICE to the `ProrationMode`.
+
+## 0.2.3+3
+
+* Fixes avoid_redundant_argument_values lint warnings and minor typos.
+
+## 0.2.3+2
+
+* Fixes incorrect json key in `queryPurchasesAsync` that fixes restore purchases functionality.
+
+## 0.2.3+1
+
+* Updates `json_serializable` to fix warnings in generated code.
+
+## 0.2.3
+
+* Upgrades Google Play Billing Library to 5.0
+* Migrates APIs to support breaking changes in new Google Play Billing API
+* `PurchaseWrapper` and `PurchaseHistoryRecordWrapper` now handles `skus` a list of sku strings. `sku` is deprecated.
+
 ## 0.2.2+8
 
 * Ignores deprecation warnings for upcoming styleFrom button API changes.

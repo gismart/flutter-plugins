@@ -11,11 +11,13 @@ import 'package:file/local.dart';
 import 'analyze_command.dart';
 import 'build_examples_command.dart';
 import 'common/core.dart';
-import 'create_all_plugins_app_command.dart';
+import 'create_all_packages_app_command.dart';
 import 'custom_test_command.dart';
+import 'dependabot_check_command.dart';
 import 'drive_examples_command.dart';
 import 'federation_safety_check_command.dart';
 import 'firebase_test_lab_command.dart';
+import 'fix_command.dart';
 import 'format_command.dart';
 import 'license_check_command.dart';
 import 'lint_android_command.dart';
@@ -24,9 +26,10 @@ import 'list_command.dart';
 import 'make_deps_path_based_command.dart';
 import 'native_test_command.dart';
 import 'publish_check_command.dart';
-import 'publish_plugin_command.dart';
+import 'publish_command.dart';
 import 'pubspec_check_command.dart';
 import 'readme_check_command.dart';
+import 'remove_dev_dependencies.dart';
 import 'test_command.dart';
 import 'update_excerpts_command.dart';
 import 'update_release_info_command.dart';
@@ -49,15 +52,17 @@ void main(List<String> args) {
   }
 
   final CommandRunner<void> commandRunner = CommandRunner<void>(
-      'pub global run flutter_plugin_tools',
+      'dart pub global run flutter_plugin_tools',
       'Productivity utils for hosting multiple plugins within one repository.')
     ..addCommand(AnalyzeCommand(packagesDir))
     ..addCommand(BuildExamplesCommand(packagesDir))
-    ..addCommand(CreateAllPluginsAppCommand(packagesDir))
+    ..addCommand(CreateAllPackagesAppCommand(packagesDir))
     ..addCommand(CustomTestCommand(packagesDir))
+    ..addCommand(DependabotCheckCommand(packagesDir))
     ..addCommand(DriveExamplesCommand(packagesDir))
     ..addCommand(FederationSafetyCheckCommand(packagesDir))
     ..addCommand(FirebaseTestLabCommand(packagesDir))
+    ..addCommand(FixCommand(packagesDir))
     ..addCommand(FormatCommand(packagesDir))
     ..addCommand(LicenseCheckCommand(packagesDir))
     ..addCommand(LintAndroidCommand(packagesDir))
@@ -66,9 +71,10 @@ void main(List<String> args) {
     ..addCommand(NativeTestCommand(packagesDir))
     ..addCommand(MakeDepsPathBasedCommand(packagesDir))
     ..addCommand(PublishCheckCommand(packagesDir))
-    ..addCommand(PublishPluginCommand(packagesDir))
+    ..addCommand(PublishCommand(packagesDir))
     ..addCommand(PubspecCheckCommand(packagesDir))
     ..addCommand(ReadmeCheckCommand(packagesDir))
+    ..addCommand(RemoveDevDependenciesCommand(packagesDir))
     ..addCommand(TestCommand(packagesDir))
     ..addCommand(UpdateExcerptsCommand(packagesDir))
     ..addCommand(UpdateReleaseInfoCommand(packagesDir))

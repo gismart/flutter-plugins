@@ -18,7 +18,7 @@ import 'package:test/test.dart';
 
 import '../mocks.dart';
 import '../util.dart';
-import 'plugin_command_test.mocks.dart';
+import 'package_command_test.mocks.dart';
 
 // Constants for colorized output start and end.
 const String _startElapsedTimeColor = '\x1B[90m';
@@ -143,7 +143,7 @@ void main() {
     runner = CommandRunner<void>('test_package_looping_command',
         'Test for base package looping functionality');
     runner.addCommand(command);
-    return await runCapturingPrint(
+    return runCapturingPrint(
       runner,
       <String>[command.name, ...arguments],
       errorHandler: errorHandler,
@@ -340,7 +340,7 @@ void main() {
       }
     });
 
-    test('skips unsupported versions when requested', () async {
+    test('skips unsupported Flutter versions when requested', () async {
       final RepositoryPackage excluded = createFakePlugin(
           'a_plugin', packagesDir,
           flutterConstraint: '>=2.10.0');
@@ -370,6 +370,36 @@ void main() {
             '$_startSkipColor  SKIPPING: Does not support Flutter 2.5.0$_endColor',
           ]));
     });
+
+    test('skips unsupported Dart versions when requested', () async {
+      final RepositoryPackage excluded = createFakePackage(
+          'excluded_package', packagesDir,
+          dartConstraint: '>=2.17.0 <3.0.0');
+      final RepositoryPackage included =
+          createFakePackage('a_package', packagesDir);
+
+      final TestPackageLoopingCommand command = createTestCommand(
+          packageLoopingType: PackageLoopingType.includeAllSubpackages,
+          hasLongOutput: false);
+      final List<String> output = await runCommand(command,
+          arguments: <String>['--skip-if-not-supporting-dart-version=2.14.0']);
+
+      expect(
+          command.checkedPackages,
+          unorderedEquals(<String>[
+            included.path,
+            getExampleDir(included).path,
+          ]));
+      expect(command.checkedPackages, isNot(contains(excluded.path)));
+
+      expect(
+          output,
+          containsAllInOrder(<String>[
+            '${_startHeadingColor}Running for a_package...$_endColor',
+            '${_startHeadingColor}Running for excluded_package...$_endColor',
+            '$_startSkipColor  SKIPPING: Does not support Dart 2.14.0$_endColor',
+          ]));
+    });
   });
 
   group('output', () {
@@ -377,8 +407,7 @@ void main() {
       createFakePlugin('package_a', packagesDir);
       createFakePackage('package_b', packagesDir);
 
-      final TestPackageLoopingCommand command =
-          createTestCommand(hasLongOutput: true);
+      final TestPackageLoopingCommand command = createTestCommand();
       final List<String> output = await runCommand(command);
 
       const String separator =
@@ -411,8 +440,7 @@ void main() {
       createFakePlugin('package_a', packagesDir);
       createFakePackage('package_b', packagesDir);
 
-      final TestPackageLoopingCommand command =
-          createTestCommand(hasLongOutput: true);
+      final TestPackageLoopingCommand command = createTestCommand();
       final List<String> output =
           await runCommand(command, arguments: <String>['--log-timing']);
 
@@ -564,7 +592,7 @@ void main() {
       createFakePackage('package_b', packagesDir);
 
       final TestPackageLoopingCommand command =
-          createTestCommand(hasLongOutput: true, captureOutput: true);
+          createTestCommand(captureOutput: true);
       final List<String> output = await runCommand(command);
 
       expect(output, isEmpty);
@@ -754,8 +782,7 @@ void main() {
 
       createFakePackage('package_f', packagesDir);
 
-      final TestPackageLoopingCommand command =
-          createTestCommand(hasLongOutput: true);
+      final TestPackageLoopingCommand command = createTestCommand();
       final List<String> output = await runCommand(command);
 
       expect(
@@ -780,8 +807,7 @@ void main() {
     test('prints exclusions as skips in long-form run summary', () async {
       createFakePackage('package_a', packagesDir);
 
-      final TestPackageLoopingCommand command =
-          createTestCommand(hasLongOutput: true);
+      final TestPackageLoopingCommand command = createTestCommand();
       final List<String> output =
           await runCommand(command, arguments: <String>['--exclude=package_a']);
 

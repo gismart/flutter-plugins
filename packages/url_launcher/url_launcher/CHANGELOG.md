@@ -1,5 +1,20 @@
-## NEXT
+## 6.1.7
 
+* Updates code for new analysis options.
+
+## 6.1.6
+
+* Updates imports for `prefer_relative_imports`.
+* Updates minimum Flutter version to 2.10.
+* Fixes avoid_redundant_argument_values lint warnings and minor typos.
+
+## 6.1.5
+
+* Migrates `README.md` examples to the [`code-excerpt` system](https://github.com/flutter/flutter/wiki/Contributing-to-Plugins-and-Packages#readme-code).
+
+## 6.1.4
+
+* Adopts new platform interface method for launching URLs.
 * Ignores unnecessary import warnings in preparation for [upcoming Flutter changes](https://github.com/flutter/flutter/pull/105648).
 
 ## 6.1.3

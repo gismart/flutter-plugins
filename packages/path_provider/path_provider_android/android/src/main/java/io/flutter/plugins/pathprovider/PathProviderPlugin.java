@@ -9,6 +9,7 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.BinaryMessenger;
 import io.flutter.plugin.common.BinaryMessenger.TaskQueue;
@@ -17,7 +18,6 @@ import io.flutter.util.PathUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nullable;
 
 public class PathProviderPlugin implements FlutterPlugin, PathProviderApi {
   static final String TAG = "PathProviderPlugin";
@@ -125,6 +125,8 @@ public class PathProviderPlugin implements FlutterPlugin, PathProviderApi {
 
   private String getStorageDirectoryString(@NonNull Messages.StorageDirectory directory) {
     switch (directory) {
+      case root:
+        return null;
       case music:
         return "music";
       case podcasts:
