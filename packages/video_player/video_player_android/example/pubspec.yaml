@@ -20,7 +20,7 @@ dependencies:
     git:
       url: https://github.com/gismart/flutter-plugins.git
       path: packages/video_player/video_player_platform_interface
-      ref: video_player-gismart
+      ref: video_player-gismart-v2.4.10
 
 dev_dependencies:
   flutter_driver:
