@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "FLTVideoPlayerPlugin.h"
+#import "AssetPersistenceManager.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
@@ -54,6 +55,8 @@
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
                 httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers;
+- (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset
+                    frameUpdater:(FLTFrameUpdater *)frameUpdater;
 @end
 
 static void *timeRangeContext = &timeRangeContext;
@@ -207,6 +210,11 @@ NS_INLINE UIViewController *rootViewController() {
     options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
   }
   AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
+  return [self initWithURLAsset:urlAsset frameUpdater:frameUpdater];
+}
+
+- (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset
+              frameUpdater:(FLTFrameUpdater *)frameUpdater {
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:urlAsset];
   return [self initWithPlayerItem:item frameUpdater:frameUpdater];
 }
@@ -633,6 +641,59 @@ NS_INLINE UIViewController *rootViewController() {
 - (void)setVolume:(FLTVolumeMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   [player setVolume:input.volume.doubleValue];
+}
+
+- (FLTTextureMessage *)createWithCaching:(FLTCreateMessage *)input error:(FlutterError **)error {
+    FLTFrameUpdater *frameUpdater = [[FLTFrameUpdater alloc] initWithRegistry:_registry];
+    FLTVideoPlayer *player;
+    
+    if (input.uri) {
+        NSDictionary<NSString *, id> *options = nil;
+        if ([input.httpHeaders count] != 0) {
+          options = @{@"AVURLAssetHTTPHeaderFieldsKey" : input.httpHeaders};
+        }
+        
+        NSURL* remoteUrl = [NSURL URLWithString:input.uri];
+        AVURLAsset* remoteUrlAsset = [AVURLAsset URLAssetWithURL:remoteUrl options:options];
+        AVURLAsset* finalUrlAsset;
+        
+        // TODO ivan:
+        NSString* assetName = @"todoivan";
+        
+        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:assetName];
+        AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+        switch(assetDownloadState) {
+            case AssetDownloaded: {
+                NSLog(@"Asset downloaded");
+                // Can delete
+                //[AssetPersistenceManager.sharedManager deleteAsset:asset];
+                Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:assetName];
+                finalUrlAsset = localAsset.urlAsset;
+                break;
+            }
+            case AssetDownloading: {
+                NSLog(@"Asset downloading");
+                // Can cancel
+                //[AssetPersistenceManager.sharedManager cancelDownload:asset];
+                Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:assetName];
+                finalUrlAsset = localAsset.urlAsset;
+                break;
+            }
+            case AssetNotDownloaded: {
+                NSLog(@"Asset not downloaded");
+                [AssetPersistenceManager.sharedManager downloadStream:asset];
+                finalUrlAsset = asset.urlAsset;
+                break;
+            }
+        }
+                
+        player = [[FLTVideoPlayer alloc] initWithURLAsset:finalUrlAsset
+                                             frameUpdater:frameUpdater];
+        return [self onPlayerSetup:player frameUpdater:frameUpdater];
+    } else {
+        *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
+        return nil;
+    }
 }
 
 - (FLTAudioTrackMessage*)getAvailableAudioTracksList:(FLTTextureMessage *)input error:(FlutterError **)error {

@@ -59,7 +59,7 @@ NSMutableDictionary *willDownloadToUrlMap;
                     AVURLAsset* urlAsset = assetDownloadTask.URLAsset;
                     
                     // TODO ivan
-                    Asset* asset = [[Asset alloc] initWithURLAsset:urlAsset name:@"todo ivan"];
+                    Asset* asset = [[Asset alloc] initWithURLAsset:urlAsset name:@"todoivan"];
                     
                     activeDownloadsMap[assetDownloadTask] = asset;
                 } else {
@@ -87,8 +87,9 @@ NSMutableDictionary *willDownloadToUrlMap;
                                                                     assetTitle: asset.name
                                                               assetArtworkData: nil
                                                                        options: nil];
-    } @finally {
-        return;
+        
+    } @catch (NSException *exception) {
+        NSLog(@"An error occured while trying to download stream:%@", exception);
     }
 
     // To better track the AVAssetDownloadTask, set the taskDescription to something unique for the sample.
@@ -139,7 +140,8 @@ NSMutableDictionary *willDownloadToUrlMap;
             
             AVURLAsset *urlAsset = [AVURLAsset assetWithURL:url];
             
-            asset = [[Asset alloc] initWithURLAsset:urlAsset name:@"stream"];
+            // TODO ivan
+            asset = [[Asset alloc] initWithURLAsset:urlAsset name:@"todoivan"];
             
             return asset;
         } @catch (NSException *exception) {
@@ -311,7 +313,7 @@ aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloa
     
     /*
      This delegate callback should only be used to save the location URL
-     somewhere in your application. Any additional work should be done in
+     somewhere in the application. Any additional work should be done in
      `URLSessionTaskDelegate.urlSession(_:task:didCompleteWithError:)`.
      */
     willDownloadToUrlMap[aggregateAssetDownloadTask] = location;
@@ -344,7 +346,7 @@ aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloa
 totalTimeRangesLoaded:(NSArray<NSValue *> *)loadedTimeRanges
 timeRangeExpectedToLoad:(CMTimeRange)timeRangeExpectedToLoad
  forMediaSelection:(AVMediaSelection *)mediaSelection {
-    // This delegate callback should be used to provide download progress for your AVAssetDownloadTask.
+    // This delegate callback should be used to provide download progress for AVAssetDownloadTask.
     Asset* asset = activeDownloadsMap[aggregateAssetDownloadTask];
     if(asset == nil) {
         return;

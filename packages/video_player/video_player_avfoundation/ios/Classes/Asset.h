@@ -13,11 +13,11 @@
 
 @end
 
-typedef enum {
+typedef NS_ENUM(NSInteger, AssetDownloadState) {
     /// The asset is not downloaded at all.
-    AssetNotDownloaded,
+    AssetNotDownloaded = 1,
     /// The asset has a download in progress.
-    AssetDownloading,
+    AssetDownloading = 3,
     /// The asset is downloaded and saved on disk.
-    AssetDownloaded
-} AssetDownloadState;
+    AssetDownloaded = 5,
+};
