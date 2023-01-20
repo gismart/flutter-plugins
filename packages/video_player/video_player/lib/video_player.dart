@@ -314,7 +314,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   int get textureId => _textureId;
 
   /// Attempts to open the given [dataSource] and load metadata about the video.
-  Future<void> initialize() async {
+  Future<void> initialize({bool enableHlsCaching = false}) async {
     final bool allowBackgroundPlayback =
         videoPlayerOptions?.allowBackgroundPlayback ?? false;
     if (!allowBackgroundPlayback) {
@@ -359,8 +359,10 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           .setMixWithOthers(videoPlayerOptions!.mixWithOthers);
     }
 
-    _textureId = (await _videoPlayerPlatform.create(dataSourceDescription)) ??
-        kUninitializedTextureId;
+    final int? textureId = enableHlsCaching
+        ? (await _videoPlayerPlatform.createWithHlsCachingSupport(dataSourceDescription))
+        : (await _videoPlayerPlatform.create(dataSourceDescription));
+    _textureId = textureId ?? kUninitializedTextureId;
     _creatingCompleter!.complete(null);
     final Completer<void> initializingCompleter = Completer<void>();
 
@@ -441,6 +443,11 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     }
     _isDisposed = true;
     super.dispose();
+  }
+
+  /// Starts background caching if source is an HLS stream with no active/finished caching job.
+  Future<void> startHlsStreamCachingIfNeeded() {
+    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded();
   }
 
   /// Starts playing the video.
