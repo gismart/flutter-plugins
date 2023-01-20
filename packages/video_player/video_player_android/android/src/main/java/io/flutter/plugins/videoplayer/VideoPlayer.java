@@ -362,7 +362,7 @@ final class VideoPlayer {
   }
 
   private void applyAudioTrackSettings(int rendererIndex, int trackIndex, int trackGroupIndex, MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
-    DefaultTrackSelector.ParametersBuilder builder = trackSelector.buildUponParameters();
+    DefaultTrackSelector.Parameters.Builder builder = trackSelector.buildUponParameters();
     //builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO);
     builder.clearSelectionOverrides(rendererIndex);
     builder.setRendererDisabled(rendererIndex, false);
