@@ -86,27 +86,27 @@ NSMutableDictionary *willDownloadToUrlMap;
                                                               assetArtworkData: nil
                                                                        options: nil];
         
+        // To better track the AVAssetDownloadTask, set the taskDescription to something unique for the sample.
+        task.taskDescription = asset.uniqueId;
+
+        activeDownloadsMap[task] = asset;
+
+        [task resume];
+        
     } @catch (NSException *exception) {
         NSLog(@"An error occured while trying to download stream:%@", exception);
     }
-
-    // To better track the AVAssetDownloadTask, set the taskDescription to something unique for the sample.
-    task.taskDescription = asset.name;
-
-    activeDownloadsMap[task] = asset;
-
-    [task resume];
 }
 
 /// Returns an Asset given a specific name if that Asset is associated with an active download.
-- (Asset *)assetForStream:(NSString *)name {
+- (Asset *)assetForStream:(NSString *)uniqueId {
     __block Asset* asset;
 
     [activeDownloadsMap enumerateKeysAndObjectsUsingBlock: ^(id _, id assetValue, BOOL *stop) {
         if ([assetValue isKindOfClass:[Asset class]]) {
             Asset* localAsset = (Asset *)assetValue;
             if(localAsset != nil) {
-                if([name isEqualToString:localAsset.name]) {
+                if([uniqueId isEqualToString:localAsset.uniqueId]) {
                     asset = assetValue;
                     *stop = YES;
                 }
@@ -118,9 +118,9 @@ NSMutableDictionary *willDownloadToUrlMap;
 }
 
 /// Returns an Asset pointing to a file on disk if it exists.
-- (Asset *)localAssetForStream:(NSString *)name {
+- (Asset *)localAssetForStream:(NSString *)uniqueId {
     NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-    NSData* localFileLocation = [userDefaults dataForKey:name];
+    NSData* localFileLocation = [userDefaults dataForKey:uniqueId];
     if(localFileLocation != nil) {
         Asset* asset;
         bool bookmarkDataIsStale = false;
@@ -138,7 +138,6 @@ NSMutableDictionary *willDownloadToUrlMap;
             
             AVURLAsset *urlAsset = [AVURLAsset assetWithURL:url];
             
-            // TODO ivan
             asset = [[Asset alloc] initWithURLAsset:urlAsset name:@"todoivan"];
             
             return asset;
@@ -154,7 +153,7 @@ NSMutableDictionary *willDownloadToUrlMap;
 /// Returns the current download state for a given Asset.
 - (AssetDownloadState)downloadState:(Asset *)asset {
     // Check if there is a file URL stored for this asset.
-    Asset* localAsset = [self localAssetForStream:asset.name];
+    Asset* localAsset = [self localAssetForStream:asset.uniqueId];
     if (localAsset != nil) {
         NSURL* localFileLocation = localAsset.urlAsset.URL;
         
@@ -171,7 +170,7 @@ NSMutableDictionary *willDownloadToUrlMap;
         if ([assetValue isKindOfClass:[Asset class]]) {
             Asset* localAsset = (Asset *)assetValue;
             if(localAsset != nil) {
-                if([asset.name isEqualToString:localAsset.name]) {
+                if([asset.uniqueId isEqualToString:localAsset.uniqueId]) {
                     isAssetDownloading = true;
                     *stop = YES;
                 }
@@ -190,14 +189,14 @@ NSMutableDictionary *willDownloadToUrlMap;
     NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
 
     @try {
-        Asset* localAsset = [self localAssetForStream:asset.name];
+        Asset* localAsset = [self localAssetForStream:asset.uniqueId];
         if(localAsset != nil) {
             NSURL* localFileLocation = localAsset.urlAsset.URL;
 
             NSFileManager* defaultFileManager = [NSFileManager defaultManager];
             [defaultFileManager removeItemAtURL:localFileLocation error:nil];
 
-            [userDefaults removeObjectForKey:asset.name];
+            [userDefaults removeObjectForKey:asset.uniqueId];
         }
     } @catch (NSException *exception) {
         NSLog(@"An error occured deleting offline HLS asset:%@", exception);
@@ -256,7 +255,7 @@ didCompleteWithError:(NSError *)error {
                              This task was canceled, should perform cleanup using the
                              URL saved from AVAssetDownloadDelegate.urlSession(_:assetDownloadTask:didFinishDownloadingTo:).
                              */
-                            localAsset = [self localAssetForStream:asset.name];
+                            localAsset = [self localAssetForStream:asset.uniqueId];
                             if(localAsset != nil) {
                                 localFileLocation = localAsset.urlAsset.URL;
                             } else {
@@ -267,9 +266,9 @@ didCompleteWithError:(NSError *)error {
                             @try {
                                 [defaultFileManager removeItemAtURL:localFileLocation error:nil];
                                 
-                                [userDefaults removeObjectForKey:asset.name];
+                                [userDefaults removeObjectForKey:asset.uniqueId];
                             } @catch (NSException *exception) {
-                                NSLog(@"An error occured trying to delete the contents on disk for:%@: %@", asset.name, error);
+                                NSLog(@"An error occured trying to delete the contents on disk for:%@: %@", asset.uniqueId, error);
                             }
                             break;
                         }
@@ -286,19 +285,13 @@ didCompleteWithError:(NSError *)error {
                     @try {
                         NSData* bookmark = [downloadURL bookmarkDataWithOptions:NSURLBookmarkCreationMinimalBookmark includingResourceValuesForKeys:nil relativeToURL:nil error:nil];
                         
-                        [userDefaults setObject:bookmark forKey:asset.name];
+                        [userDefaults setObject:bookmark forKey:asset.uniqueId];
                     } @catch (NSException *exception) {
                         NSLog(@"Failed to create bookmarkData for download URL.");
                     }
                 }
-            } else {
-                return;
             }
-        } else {
-            return;
         }
-    } else {
-        return;
     }
 }
 
@@ -331,7 +324,7 @@ didCompleteForMediaSelection:(AVMediaSelection *)mediaSelection {
         return;
     }
 
-    aggregateAssetDownloadTask.taskDescription = asset.name;
+    aggregateAssetDownloadTask.taskDescription = asset.uniqueId;
 
     [aggregateAssetDownloadTask resume];
 }

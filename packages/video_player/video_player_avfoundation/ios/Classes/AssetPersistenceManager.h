@@ -11,8 +11,8 @@
 
 - (void)restorePersistenceManager;
 - (void)downloadStream:(Asset *)asset;
-- (Asset *)assetForStream:(NSString *)name;
-- (Asset *)localAssetForStream:(NSString *)name;
+- (Asset *)assetForStream:(NSString *)uniqueId;
+- (Asset *)localAssetForStream:(NSString *)uniqueId;
 - (AssetDownloadState)downloadState:(Asset *)asset;
 - (void)deleteAsset:(Asset *)asset;
 - (void)cancelDownload:(Asset *)asset;

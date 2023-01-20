@@ -626,8 +626,8 @@ NS_INLINE UIViewController *rootViewController() {
         AVURLAsset* finalUrlAsset;
         
         //NSString* assetName = input.name; // TODO ivan: check for nil
-        NSString* assetName = @"todoivan";
-        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:assetName];
+        NSString* assetUniqueId = remoteUrl.relativePath;
+        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:@"todoivan"];
         
         if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
             AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
@@ -636,7 +636,7 @@ NS_INLINE UIViewController *rootViewController() {
                     NSLog(@"Asset downloaded");
                     // Can delete
                     //[AssetPersistenceManager.sharedManager deleteAsset:asset];
-                    Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:assetName];
+                    Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:assetUniqueId];
                     finalUrlAsset = localAsset.urlAsset;
                     break;
                 }
@@ -644,7 +644,7 @@ NS_INLINE UIViewController *rootViewController() {
                     NSLog(@"Asset downloading");
                     // Can cancel
                     //[AssetPersistenceManager.sharedManager cancelDownload:asset];
-                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:assetName];
+                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:assetUniqueId];
                     finalUrlAsset = localAsset.urlAsset;
                     break;
                 }
@@ -707,9 +707,9 @@ NS_INLINE UIViewController *rootViewController() {
         if(isHls) {
             AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
             
-            //NSString* assetName = input.name; // TODO ivan: check for nil
-            NSString* assetName = @"todoivan";
-            Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:assetName];
+            // TODO ivan
+            //NSString* assetName = @"todoivan";
+            Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:@"todoivan"];
             
             AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
             if(assetDownloadState == AssetNotDownloaded) {

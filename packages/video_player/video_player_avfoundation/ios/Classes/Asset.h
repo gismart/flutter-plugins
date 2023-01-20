@@ -4,11 +4,13 @@
 
 /// The AVURLAsset corresponding to this Asset.
 @property AVURLAsset* urlAsset;
-/// The name of the stream.
+/// The name of the stream presented to the user in System Settings.
 @property NSString* name;
+/// The unique identifier representing the Asset.
+@property NSString* uniqueId;
  
 - (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset
-                          name:(NSString *)name;
+                            name:(NSString *)name;
 - (bool)isEqualToAsset:(Asset *)asset;
 
 @end
