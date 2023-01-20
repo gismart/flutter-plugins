@@ -59,8 +59,6 @@ NSMutableDictionary *willDownloadToUrlMap;
                     Asset* asset = [[Asset alloc] initWithURLAsset:urlAsset];
                     
                     activeDownloadsMap[assetDownloadTask] = asset;
-                } else {
-                    break;
                 }
             }
         }
@@ -166,19 +164,17 @@ NSMutableDictionary *willDownloadToUrlMap;
     [activeDownloadsMap enumerateKeysAndObjectsUsingBlock: ^(id _, id assetValue, BOOL *stop) {
         if ([assetValue isKindOfClass:[Asset class]]) {
             Asset* localAsset = (Asset *)assetValue;
-            if(localAsset != nil) {
-                if([asset.uniqueId isEqualToString:localAsset.uniqueId]) {
-                    isAssetDownloading = true;
-                    *stop = YES;
-                }
+            if(localAsset != nil && [asset.uniqueId isEqualToString:localAsset.uniqueId]) {
+                isAssetDownloading = true;
+                *stop = YES;
             }
         }
     }];
     if(isAssetDownloading) {
         return AssetDownloading;
+    } else {
+        return AssetNotDownloaded;
     }
-
-    return AssetNotDownloaded;
 }
 
 /// Deletes an Asset on disk if possible.
@@ -207,11 +203,9 @@ NSMutableDictionary *willDownloadToUrlMap;
     [activeDownloadsMap enumerateKeysAndObjectsUsingBlock: ^(id taskKey, id assetValue, BOOL *stop) {
         if ([assetValue isKindOfClass:[Asset class]]) {
             Asset* localAsset = (Asset *)assetValue;
-            if(localAsset != nil) {
-                if([asset isEqualToAsset:assetValue]) {
-                    task = taskKey;
-                    *stop = YES;
-                }
+            if(localAsset != nil && [asset.uniqueId isEqualToString:localAsset.uniqueId]) {
+                task = taskKey;
+                *stop = YES;
             }
         }
     }];

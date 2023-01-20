@@ -8,15 +8,14 @@
 @property NSString* uniqueId;
  
 - (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset;
-- (bool)isEqualToAsset:(Asset *)asset;
 
 @end
 
 typedef NS_ENUM(NSInteger, AssetDownloadState) {
     /// The asset is not downloaded at all.
-    AssetNotDownloaded = 1,
+    AssetNotDownloaded,
     /// The asset has a download in progress.
-    AssetDownloading = 3,
+    AssetDownloading,
     /// The asset is downloaded and saved on disk.
-    AssetDownloaded = 5,
+    AssetDownloaded,
 };

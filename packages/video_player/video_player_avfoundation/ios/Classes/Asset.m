@@ -10,9 +10,5 @@
     }
     return self;
 }
-
-- (bool)isEqualToAsset:(Asset *)asset {
-    return ([self.urlAsset isEqual:asset.urlAsset] && [self.uniqueId isEqualToString:asset.uniqueId]);
-}
  
 @end
