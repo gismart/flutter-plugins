@@ -4,6 +4,9 @@
 #import <AVFoundation/AVFoundation.h>
 
 @interface AssetPersistenceManager : NSObject<AVAssetDownloadDelegate>
+/// Bool used to track if the AssetPersistenceManager finished restoring its state.
+@property bool didRestorePersistenceManager;
+
 + (AssetPersistenceManager *)sharedManager;
 
 - (void)restorePersistenceManager;

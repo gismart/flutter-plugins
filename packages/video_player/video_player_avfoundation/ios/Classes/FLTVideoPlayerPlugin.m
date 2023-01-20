@@ -611,6 +611,63 @@ NS_INLINE UIViewController *rootViewController() {
   }
 }
 
+- (FLTTextureMessage *)createWithHlsCachingSupport:(FLTCreateMessage *)input error:(FlutterError **)error {
+    if (input.uri != nil) {
+        NSURL* remoteUrl = [NSURL URLWithString:input.uri];
+        bool isHls = [remoteUrl.pathExtension isEqualToString:@"m3u8"];
+        if(!isHls) {
+            return [self create:input error:error];
+        }
+        
+        FLTFrameUpdater *frameUpdater = [[FLTFrameUpdater alloc] initWithRegistry:_registry];
+        FLTVideoPlayer *player;
+        
+        AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
+        AVURLAsset* finalUrlAsset;
+        
+        //NSString* assetName = input.name; // TODO ivan: check for nil
+        NSString* assetName = @"todoivan";
+        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:assetName];
+        
+        if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
+            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+            switch(assetDownloadState) {
+                case AssetDownloaded: {
+                    NSLog(@"Asset downloaded");
+                    // Can delete
+                    //[AssetPersistenceManager.sharedManager deleteAsset:asset];
+                    Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:assetName];
+                    finalUrlAsset = localAsset.urlAsset;
+                    break;
+                }
+                case AssetDownloading: {
+                    NSLog(@"Asset downloading");
+                    // Can cancel
+                    //[AssetPersistenceManager.sharedManager cancelDownload:asset];
+                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:assetName];
+                    finalUrlAsset = localAsset.urlAsset;
+                    break;
+                }
+                case AssetNotDownloaded: {
+                    NSLog(@"Asset not downloaded");
+                    [AssetPersistenceManager.sharedManager downloadStream:asset];
+                    finalUrlAsset = asset.urlAsset;
+                    break;
+                }
+            }
+        } else {
+            NSLog(@"Asset manager not yet ready");
+            finalUrlAsset = asset.urlAsset;
+        }
+                
+        player = [[FLTVideoPlayer alloc] initWithURLAsset:finalUrlAsset
+                                             frameUpdater:frameUpdater];
+        return [self onPlayerSetup:player frameUpdater:frameUpdater];
+    } else {
+        return [self create:input error:error];
+    }
+}
+
 - (void)dispose:(FLTTextureMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   [self.registry unregisterTexture:input.textureId.intValue];
@@ -643,57 +700,32 @@ NS_INLINE UIViewController *rootViewController() {
   [player setVolume:input.volume.doubleValue];
 }
 
-- (FLTTextureMessage *)createWithCaching:(FLTCreateMessage *)input error:(FlutterError **)error {
-    FLTFrameUpdater *frameUpdater = [[FLTFrameUpdater alloc] initWithRegistry:_registry];
-    FLTVideoPlayer *player;
-    
-    if (input.uri) {
-        NSDictionary<NSString *, id> *options = nil;
-        if ([input.httpHeaders count] != 0) {
-          options = @{@"AVURLAssetHTTPHeaderFieldsKey" : input.httpHeaders};
-        }
-        
+- (void)startHlsStreamCachingIfNeeded:(FLTCreateMessage *)input error:(FlutterError **)error {
+    if (input.uri != nil) {
         NSURL* remoteUrl = [NSURL URLWithString:input.uri];
-        AVURLAsset* remoteUrlAsset = [AVURLAsset URLAssetWithURL:remoteUrl options:options];
-        AVURLAsset* finalUrlAsset;
-        
-        // TODO ivan:
-        NSString* assetName = @"todoivan";
-        
-        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:assetName];
-        AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
-        switch(assetDownloadState) {
-            case AssetDownloaded: {
-                NSLog(@"Asset downloaded");
-                // Can delete
-                //[AssetPersistenceManager.sharedManager deleteAsset:asset];
-                Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:assetName];
-                finalUrlAsset = localAsset.urlAsset;
-                break;
-            }
-            case AssetDownloading: {
-                NSLog(@"Asset downloading");
-                // Can cancel
-                //[AssetPersistenceManager.sharedManager cancelDownload:asset];
-                Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:assetName];
-                finalUrlAsset = localAsset.urlAsset;
-                break;
-            }
-            case AssetNotDownloaded: {
-                NSLog(@"Asset not downloaded");
+        bool isHls = [remoteUrl.pathExtension isEqualToString:@"m3u8"];
+        if(isHls) {
+            AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
+            
+            //NSString* assetName = input.name; // TODO ivan: check for nil
+            NSString* assetName = @"todoivan";
+            Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:assetName];
+            
+            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+            if(assetDownloadState == AssetNotDownloaded) {
                 [AssetPersistenceManager.sharedManager downloadStream:asset];
-                finalUrlAsset = asset.urlAsset;
-                break;
             }
         }
-                
-        player = [[FLTVideoPlayer alloc] initWithURLAsset:finalUrlAsset
-                                             frameUpdater:frameUpdater];
-        return [self onPlayerSetup:player frameUpdater:frameUpdater];
-    } else {
-        *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
-        return nil;
     }
+}
+
+- (AVURLAsset*)createAVURLAssetWithHttpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders remoteUrl:(NSURL *)remoteUrl {
+    NSDictionary<NSString *, id> *options = nil;
+    if ([httpHeaders count] != 0) {
+      options = @{@"AVURLAssetHTTPHeaderFieldsKey" : httpHeaders};
+    }
+    
+    return [AVURLAsset URLAssetWithURL:remoteUrl options:options];
 }
 
 - (FLTAudioTrackMessage*)getAvailableAudioTracksList:(FLTTextureMessage *)input error:(FlutterError **)error {

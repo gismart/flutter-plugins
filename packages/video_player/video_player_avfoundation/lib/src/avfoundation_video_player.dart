@@ -32,10 +32,24 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
 
   @override
   Future<int?> create(DataSource dataSource) async {
+    final CreateMessage message = _obtainCreateMessageFromDataSource(dataSource);
+    final TextureMessage response = await _api.create(message);
+    return response.textureId;
+  }
+
+  @override
+  Future<int?> createWithHlsCachingSupport(DataSource dataSource) async {
+    final CreateMessage message = _obtainCreateMessageFromDataSource(dataSource);
+    final TextureMessage response = await _api.createWithHlsCachingSupport(message);
+    return response.textureId;
+  }
+
+  CreateMessage _obtainCreateMessageFromDataSource(DataSource dataSource) {
     String? asset;
     String? packageName;
     String? uri;
     String? formatHint;
+    String? name;
     Map<String, String> httpHeaders = <String, String>{};
     switch (dataSource.sourceType) {
       case DataSourceType.asset:
@@ -46,6 +60,7 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
         uri = dataSource.uri;
         formatHint = _videoFormatStringMap[dataSource.formatHint];
         httpHeaders = dataSource.httpHeaders;
+        name = dataSource.name;
         break;
       case DataSourceType.file:
         uri = dataSource.uri;
@@ -54,16 +69,14 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
         uri = dataSource.uri;
         break;
     }
-    final CreateMessage message = CreateMessage(
+    return CreateMessage(
       asset: asset,
       packageName: packageName,
       uri: uri,
       httpHeaders: httpHeaders,
       formatHint: formatHint,
+      name: name,
     );
-
-    final TextureMessage response = await _api.create(message);
-    return response.textureId;
   }
 
   @override
@@ -72,6 +85,12 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
       textureId: textureId,
       isLooping: looping,
     ));
+  }
+
+  @override
+  Future<void> startHlsStreamCachingIfNeeded(DataSource dataSource) {
+    final CreateMessage message = _obtainCreateMessageFromDataSource(dataSource);
+    return _api.startHlsStreamCachingIfNeeded(message);
   }
 
   @override

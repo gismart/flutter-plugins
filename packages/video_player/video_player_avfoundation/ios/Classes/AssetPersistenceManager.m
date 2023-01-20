@@ -2,9 +2,6 @@
 
 @implementation AssetPersistenceManager
 
-/// Internal Bool used to track if the AssetPersistenceManager finished restoring its state.
-bool didRestorePersistenceManager = false;
-
 /// The AVAssetDownloadURLSession to use for managing AVAssetDownloadTasks.
 AVAssetDownloadURLSession* assetDownloadURLSession;
 
@@ -20,6 +17,7 @@ NSMutableDictionary *willDownloadToUrlMap;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedManager = [[self alloc] init];
+        sharedManager.didRestorePersistenceManager = false;
     });
     return sharedManager;
 }
@@ -45,9 +43,9 @@ NSMutableDictionary *willDownloadToUrlMap;
 
 /// Restores the Application state by getting all the AVAssetDownloadTasks and restoring their Asset structs.
 - (void)restorePersistenceManager {
-    if(didRestorePersistenceManager) { return; }
+    if(_didRestorePersistenceManager) { return; }
     
-    didRestorePersistenceManager = true;
+    _didRestorePersistenceManager = true;
     
     // Grab all the tasks associated with the assetDownloadURLSession
     [assetDownloadURLSession getAllTasksWithCompletionHandler:^(NSArray* tasksArray) {
@@ -273,7 +271,6 @@ didCompleteWithError:(NSError *)error {
                             } @catch (NSException *exception) {
                                 NSLog(@"An error occured trying to delete the contents on disk for:%@: %@", asset.name, error);
                             }
-
                             break;
                         }
                         case NSURLErrorUnknown: {

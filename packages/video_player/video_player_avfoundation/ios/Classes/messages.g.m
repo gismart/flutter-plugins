@@ -196,12 +196,14 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
     uri:(nullable NSString *)uri
     packageName:(nullable NSString *)packageName
     formatHint:(nullable NSString *)formatHint
+    name:(nullable NSString *)name
     httpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders {
   FLTCreateMessage* pigeonResult = [[FLTCreateMessage alloc] init];
   pigeonResult.asset = asset;
   pigeonResult.uri = uri;
   pigeonResult.packageName = packageName;
   pigeonResult.formatHint = formatHint;
+  pigeonResult.name = name;
   pigeonResult.httpHeaders = httpHeaders;
   return pigeonResult;
 }
@@ -211,12 +213,13 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
   pigeonResult.uri = GetNullableObject(dict, @"uri");
   pigeonResult.packageName = GetNullableObject(dict, @"packageName");
   pigeonResult.formatHint = GetNullableObject(dict, @"formatHint");
+  pigeonResult.name = GetNullableObject(dict, @"name");
   pigeonResult.httpHeaders = GetNullableObject(dict, @"httpHeaders");
   NSAssert(pigeonResult.httpHeaders != nil, @"");
   return pigeonResult;
 }
 - (NSDictionary *)toMap {
-  return [NSDictionary dictionaryWithObjectsAndKeys:(self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.httpHeaders ? self.httpHeaders : [NSNull null]), @"httpHeaders", nil];
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.asset ? self.asset : [NSNull null]), @"asset", (self.uri ? self.uri : [NSNull null]), @"uri", (self.packageName ? self.packageName : [NSNull null]), @"packageName", (self.formatHint ? self.formatHint : [NSNull null]), @"formatHint", (self.name ? self.name : [NSNull null]), @"name", (self.httpHeaders ? self.httpHeaders : [NSNull null]), @"httpHeaders", nil];
 }
 @end
 
@@ -381,6 +384,26 @@ void FLTAVFoundationVideoPlayerApiSetup(id<FlutterBinaryMessenger> binaryMesseng
   {
     FlutterBasicMessageChannel *channel =
       [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.AVFoundationVideoPlayerApi.createWithHlsCachingSupport"
+        binaryMessenger:binaryMessenger
+        codec:FLTAVFoundationVideoPlayerApiGetCodec()        ];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(createWithHlsCachingSupport:error:)], @"FLTAVFoundationVideoPlayerApi api (%@) doesn't respond to @selector(createWithHlsCachingSupport:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        FLTCreateMessage *arg_msg = GetNullableObjectAtIndex(args, 0);
+        FlutterError *error;
+        FLTTextureMessage *output = [api createWithHlsCachingSupport:arg_msg error:&error];
+        callback(wrapResult(output, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
         initWithName:@"dev.flutter.pigeon.AVFoundationVideoPlayerApi.dispose"
         binaryMessenger:binaryMessenger
         codec:FLTAVFoundationVideoPlayerApiGetCodec()        ];
@@ -511,6 +534,26 @@ void FLTAVFoundationVideoPlayerApiSetup(id<FlutterBinaryMessenger> binaryMesseng
         FLTPlaybackSpeedMessage *arg_msg = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
         [api setPlaybackSpeed:arg_msg error:&error];
+        callback(wrapResult(nil, error));
+      }];
+    }
+    else {
+      [channel setMessageHandler:nil];
+    }
+  }
+  {
+    FlutterBasicMessageChannel *channel =
+      [[FlutterBasicMessageChannel alloc]
+        initWithName:@"dev.flutter.pigeon.AVFoundationVideoPlayerApi.startHlsStreamCachingIfNeeded"
+        binaryMessenger:binaryMessenger
+        codec:FLTAVFoundationVideoPlayerApiGetCodec()        ];
+    if (api) {
+      NSCAssert([api respondsToSelector:@selector(startHlsStreamCachingIfNeeded:error:)], @"FLTAVFoundationVideoPlayerApi api (%@) doesn't respond to @selector(startHlsStreamCachingIfNeeded:error:)", api);
+      [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
+        NSArray *args = message;
+        FLTCreateMessage *arg_msg = GetNullableObjectAtIndex(args, 0);
+        FlutterError *error;
+        [api startHlsStreamCachingIfNeeded:arg_msg error:&error];
         callback(wrapResult(nil, error));
       }];
     }

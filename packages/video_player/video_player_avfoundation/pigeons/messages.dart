@@ -56,6 +56,7 @@ class CreateMessage {
   String? uri;
   String? packageName;
   String? formatHint;
+  String? name;
   Map<String?, String?> httpHeaders;
 }
 
@@ -70,6 +71,8 @@ abstract class AVFoundationVideoPlayerApi {
   void initialize();
   @ObjCSelector('create:')
   TextureMessage create(CreateMessage msg);
+  @ObjCSelector('createWithHlsCachingSupport:')
+  TextureMessage createWithHlsCachingSupport(CreateMessage msg);
   @ObjCSelector('dispose:')
   void dispose(TextureMessage msg);
   @ObjCSelector('setLooping:')
@@ -84,6 +87,8 @@ abstract class AVFoundationVideoPlayerApi {
   void setActiveAudioTrackByIndex(AudioTrackMessage msg);
   @ObjCSelector('setPlaybackSpeed:')
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
+  @ObjCSelector('startHlsStreamCachingIfNeeded:')
+  void startHlsStreamCachingIfNeeded(CreateMessage msg);
   @ObjCSelector('play:')
   void play(TextureMessage msg);
   @ObjCSelector('position:')
