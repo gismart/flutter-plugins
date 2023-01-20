@@ -323,36 +323,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     _lifeCycleObserver?.initialize();
     _creatingCompleter = Completer<void>();
 
-    late DataSource dataSourceDescription;
-    switch (dataSourceType) {
-      case DataSourceType.asset:
-        dataSourceDescription = DataSource(
-          sourceType: DataSourceType.asset,
-          asset: dataSource,
-          package: package,
-        );
-        break;
-      case DataSourceType.network:
-        dataSourceDescription = DataSource(
-          sourceType: DataSourceType.network,
-          uri: dataSource,
-          formatHint: formatHint,
-          httpHeaders: httpHeaders,
-        );
-        break;
-      case DataSourceType.file:
-        dataSourceDescription = DataSource(
-          sourceType: DataSourceType.file,
-          uri: dataSource,
-        );
-        break;
-      case DataSourceType.contentUri:
-        dataSourceDescription = DataSource(
-          sourceType: DataSourceType.contentUri,
-          uri: dataSource,
-        );
-        break;
-    }
+    late final DataSource dataSourceDescription = _obtainDataSource();
 
     if (videoPlayerOptions?.mixWithOthers != null) {
       await _videoPlayerPlatform
@@ -447,7 +418,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Starts background caching if source is an HLS stream with no active/finished caching job.
   Future<void> startHlsStreamCachingIfNeeded() {
-    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded();
+    late final DataSource dataSourceDescription = _obtainDataSource();
+    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(dataSourceDescription);
   }
 
   /// Starts playing the video.
@@ -476,6 +448,34 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   Future<void> pause() async {
     value = value.copyWith(isPlaying: false);
     await _applyPlayPause();
+  }
+
+  DataSource _obtainDataSource() {
+    switch (dataSourceType) {
+      case DataSourceType.asset:
+        return DataSource(
+          sourceType: DataSourceType.asset,
+          asset: dataSource,
+          package: package,
+        );
+      case DataSourceType.network:
+        return DataSource(
+          sourceType: DataSourceType.network,
+          uri: dataSource,
+          formatHint: formatHint,
+          httpHeaders: httpHeaders,
+        );
+      case DataSourceType.file:
+        return DataSource(
+          sourceType: DataSourceType.file,
+          uri: dataSource,
+        );
+      case DataSourceType.contentUri:
+        return DataSource(
+          sourceType: DataSourceType.contentUri,
+          uri: dataSource,
+        );
+    }
   }
 
   Future<void> _applyLooping() async {
