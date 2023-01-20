@@ -626,8 +626,7 @@ NS_INLINE UIViewController *rootViewController() {
         AVURLAsset* finalUrlAsset;
         
         //NSString* assetName = input.name; // TODO ivan: check for nil
-        NSString* assetUniqueId = remoteUrl.relativePath;
-        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:@"todoivan"];
+        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
         
         if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
             AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
@@ -636,7 +635,7 @@ NS_INLINE UIViewController *rootViewController() {
                     NSLog(@"Asset downloaded");
                     // Can delete
                     //[AssetPersistenceManager.sharedManager deleteAsset:asset];
-                    Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:assetUniqueId];
+                    Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:asset.uniqueId];
                     finalUrlAsset = localAsset.urlAsset;
                     break;
                 }
@@ -644,14 +643,15 @@ NS_INLINE UIViewController *rootViewController() {
                     NSLog(@"Asset downloading");
                     // Can cancel
                     //[AssetPersistenceManager.sharedManager cancelDownload:asset];
-                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:assetUniqueId];
+                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
                     finalUrlAsset = localAsset.urlAsset;
                     break;
                 }
                 case AssetNotDownloaded: {
                     NSLog(@"Asset not downloaded");
-                    [AssetPersistenceManager.sharedManager downloadStream:asset];
-                    finalUrlAsset = asset.urlAsset;
+                    [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
+                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
+                    finalUrlAsset = localAsset.urlAsset;
                     break;
                 }
             }
@@ -659,7 +659,7 @@ NS_INLINE UIViewController *rootViewController() {
             NSLog(@"Asset manager not yet ready");
             finalUrlAsset = asset.urlAsset;
         }
-                
+             
         player = [[FLTVideoPlayer alloc] initWithURLAsset:finalUrlAsset
                                              frameUpdater:frameUpdater];
         return [self onPlayerSetup:player frameUpdater:frameUpdater];
@@ -707,13 +707,11 @@ NS_INLINE UIViewController *rootViewController() {
         if(isHls) {
             AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
             
-            // TODO ivan
-            //NSString* assetName = @"todoivan";
-            Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset name:@"todoivan"];
+            Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
             
             AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
             if(assetDownloadState == AssetNotDownloaded) {
-                [AssetPersistenceManager.sharedManager downloadStream:asset];
+                [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
             }
         }
     }

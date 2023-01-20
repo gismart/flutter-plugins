@@ -10,7 +10,7 @@
 + (AssetPersistenceManager *)sharedManager;
 
 - (void)restorePersistenceManager;
-- (void)downloadStream:(Asset *)asset;
+- (void)downloadStream:(Asset *)asset streamName:(NSString *)streamName;
 - (Asset *)assetForStream:(NSString *)uniqueId;
 - (Asset *)localAssetForStream:(NSString *)uniqueId;
 - (AssetDownloadState)downloadState:(Asset *)asset;

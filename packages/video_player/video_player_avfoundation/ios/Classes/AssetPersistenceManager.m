@@ -56,8 +56,7 @@ NSMutableDictionary *willDownloadToUrlMap;
                 if(assetDownloadTask != nil && assetName != nil) {
                     AVURLAsset* urlAsset = assetDownloadTask.URLAsset;
                     
-                    // TODO ivan
-                    Asset* asset = [[Asset alloc] initWithURLAsset:urlAsset name:@"todoivan"];
+                    Asset* asset = [[Asset alloc] initWithURLAsset:urlAsset];
                     
                     activeDownloadsMap[assetDownloadTask] = asset;
                 } else {
@@ -69,7 +68,7 @@ NSMutableDictionary *willDownloadToUrlMap;
 }
 
 /// Triggers the initial AVAssetDownloadTask for a given Asset.
-- (void)downloadStream:(Asset *)asset {
+- (void)downloadStream:(Asset *)asset streamName:(NSString *)streamName {
     // Get the default media selections for the asset's media selection groups.
     AVMediaSelection* preferredMediaSelection = asset.urlAsset.preferredMediaSelection;
     NSArray* preferredMediaSelections = [[NSArray alloc] initWithObjects:preferredMediaSelection, nil];
@@ -82,7 +81,7 @@ NSMutableDictionary *willDownloadToUrlMap;
     @try {
         task = [assetDownloadURLSession aggregateAssetDownloadTaskWithURLAsset: asset.urlAsset
                                                                mediaSelections: preferredMediaSelections
-                                                                    assetTitle: asset.name
+                                                                    assetTitle: streamName
                                                               assetArtworkData: nil
                                                                        options: nil];
         
@@ -92,7 +91,6 @@ NSMutableDictionary *willDownloadToUrlMap;
         activeDownloadsMap[task] = asset;
 
         [task resume];
-        
     } @catch (NSException *exception) {
         NSLog(@"An error occured while trying to download stream:%@", exception);
     }
@@ -138,7 +136,7 @@ NSMutableDictionary *willDownloadToUrlMap;
             
             AVURLAsset *urlAsset = [AVURLAsset assetWithURL:url];
             
-            asset = [[Asset alloc] initWithURLAsset:urlAsset name:@"todoivan"];
+            asset = [[Asset alloc] initWithURLAsset:urlAsset];
             
             return asset;
         } @catch (NSException *exception) {
@@ -270,6 +268,10 @@ didCompleteWithError:(NSError *)error {
                             } @catch (NSException *exception) {
                                 NSLog(@"An error occured trying to delete the contents on disk for:%@: %@", asset.uniqueId, error);
                             }
+                            break;
+                        }
+                        case NSURLErrorDataNotAllowed: {
+                            // Called if Internet gets disconnected
                             break;
                         }
                         case NSURLErrorUnknown: {
