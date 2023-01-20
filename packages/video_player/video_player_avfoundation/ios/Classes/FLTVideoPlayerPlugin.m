@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "FLTVideoPlayerPlugin.h"
+#import "AssetPersistenceManager.h"
 
 #import <AVFoundation/AVFoundation.h>
 #import <GLKit/GLKit.h>
@@ -54,6 +55,8 @@
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
                 httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers;
+- (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset
+                    frameUpdater:(FLTFrameUpdater *)frameUpdater;
 @end
 
 static void *timeRangeContext = &timeRangeContext;
@@ -207,6 +210,11 @@ NS_INLINE UIViewController *rootViewController() {
     options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
   }
   AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
+  return [self initWithURLAsset:urlAsset frameUpdater:frameUpdater];
+}
+
+- (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset
+              frameUpdater:(FLTFrameUpdater *)frameUpdater {
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:urlAsset];
   return [self initWithPlayerItem:item frameUpdater:frameUpdater];
 }
@@ -603,6 +611,58 @@ NS_INLINE UIViewController *rootViewController() {
   }
 }
 
+- (FLTTextureMessage *)createWithHlsCachingSupport:(FLTCreateMessage *)input error:(FlutterError **)error {
+    if (input.uri != nil) {
+        NSURL* remoteUrl = [NSURL URLWithString:input.uri];
+        if(![self isHlsStream:remoteUrl]) {
+            return [self create:input error:error];
+        }
+        
+        FLTFrameUpdater *frameUpdater = [[FLTFrameUpdater alloc] initWithRegistry:_registry];
+        FLTVideoPlayer *player;
+        
+        AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
+        Asset* localAsset;
+        
+        Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
+        
+        if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
+            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+            switch(assetDownloadState) {
+                case AssetDownloaded: {
+                    NSLog(@"HLS asset is in cache");
+                    // Can delete
+                    //[AssetPersistenceManager.sharedManager deleteAsset:asset];
+                    localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:asset.uniqueId];
+                    break;
+                }
+                case AssetDownloading: {
+                    NSLog(@"HLS asset is downloading");
+                    // Can cancel
+                    //[AssetPersistenceManager.sharedManager cancelDownload:asset];
+                    localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
+                    break;
+                }
+                case AssetNotDownloaded: {
+                    NSLog(@"HLS asset is not cached, starting download");
+                    [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
+                    localAsset = asset;
+                    break;
+                }
+            }
+        } else {
+            NSLog(@"Asset manager not initialized (did you forget to restore state in AppDelegate?)");
+            localAsset = asset;
+        }
+             
+        player = [[FLTVideoPlayer alloc] initWithURLAsset:localAsset.urlAsset
+                                             frameUpdater:frameUpdater];
+        return [self onPlayerSetup:player frameUpdater:frameUpdater];
+    } else {
+        return [self create:input error:error];
+    }
+}
+
 - (void)dispose:(FLTTextureMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   [self.registry unregisterTexture:input.textureId.intValue];
@@ -633,6 +693,35 @@ NS_INLINE UIViewController *rootViewController() {
 - (void)setVolume:(FLTVolumeMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer *player = self.playersByTextureId[input.textureId];
   [player setVolume:input.volume.doubleValue];
+}
+
+- (void)startHlsStreamCachingIfNeeded:(FLTCreateMessage *)input error:(FlutterError **)error {
+    if (input.uri != nil) {
+        NSURL* remoteUrl = [NSURL URLWithString:input.uri];
+        if([self isHlsStream:remoteUrl]) {
+            AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
+            
+            Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
+            
+            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+            if(assetDownloadState == AssetNotDownloaded) {
+                [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
+            }
+        }
+    }
+}
+
+- (AVURLAsset*)createAVURLAssetWithHttpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders remoteUrl:(NSURL *)remoteUrl {
+    NSDictionary<NSString *, id> *options = nil;
+    if ([httpHeaders count] != 0) {
+      options = @{@"AVURLAssetHTTPHeaderFieldsKey" : httpHeaders};
+    }
+    
+    return [AVURLAsset URLAssetWithURL:remoteUrl options:options];
+}
+
+- (bool)isHlsStream:(NSURL *)remoteUrl {
+    return [remoteUrl.pathExtension isEqualToString:@"m3u8"];
 }
 
 - (FLTAudioTrackMessage*)getAvailableAudioTracksList:(FLTTextureMessage *)input error:(FlutterError **)error {

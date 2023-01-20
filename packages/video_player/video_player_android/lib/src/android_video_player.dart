@@ -67,11 +67,23 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<int?> createWithHlsCachingSupport(DataSource dataSource) async {
+    // HLS caching is not supported on Android
+    return create(dataSource);
+  }
+
+  @override
   Future<void> setLooping(int textureId, bool looping) {
     return _api.setLooping(LoopingMessage(
       textureId: textureId,
       isLooping: looping,
     ));
+  }
+
+  @override
+  Future<void> startHlsStreamCachingIfNeeded(DataSource dataSource) {
+    // HLS caching is not supported on Android
+    return Future<void>.value();
   }
 
   @override

@@ -8,8 +8,6 @@
 // @dart = 2.12
 import 'dart:async';
 import 'dart:typed_data' show Uint8List, Int32List, Int64List, Float64List;
-// TODO(a14n): remove this import once Flutter 3.1 or later reaches stable (including flutter/flutter#106316)
-// ignore: unnecessary_import
 import 'package:flutter/foundation.dart' show WriteBuffer, ReadBuffer;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -94,6 +92,7 @@ abstract class TestHostVideoPlayerApi {
 
   void initialize();
   TextureMessage create(CreateMessage msg);
+  TextureMessage createWithHlsCachingSupport(CreateMessage msg);
   void dispose(TextureMessage msg);
   void setLooping(LoopingMessage msg);
   void setVolume(VolumeMessage msg);
@@ -101,6 +100,7 @@ abstract class TestHostVideoPlayerApi {
   void setActiveAudioTrack(AudioTrackMessage msg);
   void setActiveAudioTrackByIndex(AudioTrackMessage msg);
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
+  void startHlsStreamCachingIfNeeded(CreateMessage msg);
   void play(TextureMessage msg);
   PositionMessage position(TextureMessage msg);
   void seekTo(PositionMessage msg);
@@ -132,6 +132,22 @@ abstract class TestHostVideoPlayerApi {
           final CreateMessage? arg_msg = (args[0] as CreateMessage?);
           assert(arg_msg != null, 'Argument for dev.flutter.pigeon.AVFoundationVideoPlayerApi.create was null, expected non-null CreateMessage.');
           final TextureMessage output = api.create(arg_msg!);
+          return <Object?, Object?>{'result': output};
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.AVFoundationVideoPlayerApi.createWithHlsCachingSupport', codec, binaryMessenger: binaryMessenger);
+      if (api == null) {
+        channel.setMockMessageHandler(null);
+      } else {
+        channel.setMockMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.AVFoundationVideoPlayerApi.createWithHlsCachingSupport was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final CreateMessage? arg_msg = (args[0] as CreateMessage?);
+          assert(arg_msg != null, 'Argument for dev.flutter.pigeon.AVFoundationVideoPlayerApi.createWithHlsCachingSupport was null, expected non-null CreateMessage.');
+          final TextureMessage output = api.createWithHlsCachingSupport(arg_msg!);
           return <Object?, Object?>{'result': output};
         });
       }
@@ -244,6 +260,22 @@ abstract class TestHostVideoPlayerApi {
           final PlaybackSpeedMessage? arg_msg = (args[0] as PlaybackSpeedMessage?);
           assert(arg_msg != null, 'Argument for dev.flutter.pigeon.AVFoundationVideoPlayerApi.setPlaybackSpeed was null, expected non-null PlaybackSpeedMessage.');
           api.setPlaybackSpeed(arg_msg!);
+          return <Object?, Object?>{};
+        });
+      }
+    }
+    {
+      final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+          'dev.flutter.pigeon.AVFoundationVideoPlayerApi.startHlsStreamCachingIfNeeded', codec, binaryMessenger: binaryMessenger);
+      if (api == null) {
+        channel.setMockMessageHandler(null);
+      } else {
+        channel.setMockMessageHandler((Object? message) async {
+          assert(message != null, 'Argument for dev.flutter.pigeon.AVFoundationVideoPlayerApi.startHlsStreamCachingIfNeeded was null.');
+          final List<Object?> args = (message as List<Object?>?)!;
+          final CreateMessage? arg_msg = (args[0] as CreateMessage?);
+          assert(arg_msg != null, 'Argument for dev.flutter.pigeon.AVFoundationVideoPlayerApi.startHlsStreamCachingIfNeeded was null, expected non-null CreateMessage.');
+          api.startHlsStreamCachingIfNeeded(arg_msg!);
           return <Object?, Object?>{};
         });
       }

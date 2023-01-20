@@ -53,6 +53,11 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
     throw UnimplementedError('create() has not been implemented.');
   }
 
+  /// Creates an instance of a video player with HLS caching support and returns its textureId.
+  Future<int?> createWithHlsCachingSupport(DataSource dataSource) {
+    throw UnimplementedError('createWithHlsCachingSupport() has not been implemented.');
+  }
+
   /// Returns a Stream of [VideoEventType]s.
   Stream<VideoEvent> videoEventsFor(int textureId) {
     throw UnimplementedError('videoEventsFor() has not been implemented.');
@@ -61,6 +66,11 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   /// Sets the looping attribute of the video.
   Future<void> setLooping(int textureId, bool looping) {
     throw UnimplementedError('setLooping() has not been implemented.');
+  }
+
+  /// Starts background caching if source is an HLS stream with no active/finished caching job.
+  Future<void> startHlsStreamCachingIfNeeded(DataSource dataSource) {
+    throw UnimplementedError('startHlsStreamCachingIfNeeded() has not been implemented.');
   }
 
   /// Starts the video playback.
@@ -143,6 +153,7 @@ class DataSource {
     this.formatHint,
     this.asset,
     this.package,
+    this.name,
     this.httpHeaders = const <String, String>{},
   });
 
@@ -173,6 +184,9 @@ class DataSource {
   /// The package that the asset was loaded from. Only set for
   /// [DataSourceType.asset] videos.
   final String? package;
+
+  /// User-friendly name of the asset (only used for HLS streams).
+  final String? name;
 }
 
 /// The way in which the video was originally loaded.

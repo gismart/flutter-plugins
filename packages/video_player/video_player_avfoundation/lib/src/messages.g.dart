@@ -167,6 +167,7 @@ class CreateMessage {
     this.uri,
     this.packageName,
     this.formatHint,
+    this.name,
     required this.httpHeaders,
   });
 
@@ -174,6 +175,7 @@ class CreateMessage {
   String? uri;
   String? packageName;
   String? formatHint;
+  String? name;
   Map<String?, String?> httpHeaders;
 
   Object encode() {
@@ -182,6 +184,7 @@ class CreateMessage {
     pigeonMap['uri'] = uri;
     pigeonMap['packageName'] = packageName;
     pigeonMap['formatHint'] = formatHint;
+    pigeonMap['name'] = name;
     pigeonMap['httpHeaders'] = httpHeaders;
     return pigeonMap;
   }
@@ -193,6 +196,7 @@ class CreateMessage {
       uri: pigeonMap['uri'] as String?,
       packageName: pigeonMap['packageName'] as String?,
       formatHint: pigeonMap['formatHint'] as String?,
+      name: pigeonMap['name'] as String?,
       httpHeaders: (pigeonMap['httpHeaders'] as Map<Object?, Object?>?)!.cast<String?, String?>(),
     );
   }
@@ -328,6 +332,33 @@ class AVFoundationVideoPlayerApi {
   Future<TextureMessage> create(CreateMessage arg_msg) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AVFoundationVideoPlayerApi.create', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object?>[arg_msg]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else if (replyMap['result'] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyMap['result'] as TextureMessage?)!;
+    }
+  }
+
+  Future<TextureMessage> createWithHlsCachingSupport(CreateMessage arg_msg) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.AVFoundationVideoPlayerApi.createWithHlsCachingSupport', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object?>[arg_msg]) as Map<Object?, Object?>?;
     if (replyMap == null) {
@@ -492,6 +523,28 @@ class AVFoundationVideoPlayerApi {
   Future<void> setPlaybackSpeed(PlaybackSpeedMessage arg_msg) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AVFoundationVideoPlayerApi.setPlaybackSpeed', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object?>[arg_msg]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else {
+      return;
+    }
+  }
+
+  Future<void> startHlsStreamCachingIfNeeded(CreateMessage arg_msg) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.AVFoundationVideoPlayerApi.startHlsStreamCachingIfNeeded', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
         await channel.send(<Object?>[arg_msg]) as Map<Object?, Object?>?;
     if (replyMap == null) {

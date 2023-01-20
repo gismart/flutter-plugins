@@ -5,12 +5,20 @@
 #include "AppDelegate.h"
 #include "GeneratedPluginRegistrant.h"
 
+#if __has_include(<video_player_avfoundation/AssetPersistenceManager.h>)
+#import <video_player_avfoundation/AssetPersistenceManager.h>
+#else
+@import video_player_avfoundation;
+#endif
+
 @implementation AppDelegate
 
 - (BOOL)application:(UIApplication *)application
     didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
   [GeneratedPluginRegistrant registerWithRegistry:self];
   // Override point for customization after application launch.
+  // Restore any running HLS downloads.
+  [AssetPersistenceManager.sharedManager restorePersistenceManager];
   return [super application:application didFinishLaunchingWithOptions:launchOptions];
 }
 
