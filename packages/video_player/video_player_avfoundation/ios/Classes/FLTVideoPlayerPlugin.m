@@ -614,8 +614,7 @@ NS_INLINE UIViewController *rootViewController() {
 - (FLTTextureMessage *)createWithHlsCachingSupport:(FLTCreateMessage *)input error:(FlutterError **)error {
     if (input.uri != nil) {
         NSURL* remoteUrl = [NSURL URLWithString:input.uri];
-        bool isHls = [remoteUrl.pathExtension isEqualToString:@"m3u8"];
-        if(!isHls) {
+        if(![self isHlsStream:remoteUrl]) {
             return [self create:input error:error];
         }
         
@@ -623,9 +622,9 @@ NS_INLINE UIViewController *rootViewController() {
         FLTVideoPlayer *player;
         
         AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
+        Asset* localAsset;
         AVURLAsset* finalUrlAsset;
         
-        //NSString* assetName = input.name; // TODO ivan: check for nil
         Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
         
         if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
@@ -635,23 +634,20 @@ NS_INLINE UIViewController *rootViewController() {
                     NSLog(@"Asset downloaded");
                     // Can delete
                     //[AssetPersistenceManager.sharedManager deleteAsset:asset];
-                    Asset* localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:asset.uniqueId];
-                    finalUrlAsset = localAsset.urlAsset;
+                    localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:asset.uniqueId];
                     break;
                 }
                 case AssetDownloading: {
                     NSLog(@"Asset downloading");
                     // Can cancel
                     //[AssetPersistenceManager.sharedManager cancelDownload:asset];
-                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
-                    finalUrlAsset = localAsset.urlAsset;
+                    localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
                     break;
                 }
                 case AssetNotDownloaded: {
                     NSLog(@"Asset not downloaded");
                     [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
-                    Asset* localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
-                    finalUrlAsset = localAsset.urlAsset;
+                    localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
                     break;
                 }
             }
@@ -660,7 +656,7 @@ NS_INLINE UIViewController *rootViewController() {
             finalUrlAsset = asset.urlAsset;
         }
              
-        player = [[FLTVideoPlayer alloc] initWithURLAsset:finalUrlAsset
+        player = [[FLTVideoPlayer alloc] initWithURLAsset:localAsset.urlAsset
                                              frameUpdater:frameUpdater];
         return [self onPlayerSetup:player frameUpdater:frameUpdater];
     } else {
@@ -703,8 +699,7 @@ NS_INLINE UIViewController *rootViewController() {
 - (void)startHlsStreamCachingIfNeeded:(FLTCreateMessage *)input error:(FlutterError **)error {
     if (input.uri != nil) {
         NSURL* remoteUrl = [NSURL URLWithString:input.uri];
-        bool isHls = [remoteUrl.pathExtension isEqualToString:@"m3u8"];
-        if(isHls) {
+        if([self isHlsStream:remoteUrl]) {
             AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
             
             Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
@@ -724,6 +719,10 @@ NS_INLINE UIViewController *rootViewController() {
     }
     
     return [AVURLAsset URLAssetWithURL:remoteUrl options:options];
+}
+
+- (bool)isHlsStream:(NSURL *)remoteUrl {
+    return [remoteUrl.pathExtension isEqualToString:@"m3u8"];
 }
 
 - (FLTAudioTrackMessage*)getAvailableAudioTracksList:(FLTTextureMessage *)input error:(FlutterError **)error {
