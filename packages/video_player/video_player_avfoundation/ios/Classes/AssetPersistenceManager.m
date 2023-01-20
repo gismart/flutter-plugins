@@ -36,7 +36,7 @@ NSMutableDictionary *willDownloadToUrlMap;
         
         assetDownloadURLSession = [AVAssetDownloadURLSession sessionWithConfiguration:backgroundConfiguration
                                                                 assetDownloadDelegate:self
-                                                                        delegateQueue: NSOperationQueue.mainQueue];
+                                                                        delegateQueue:NSOperationQueue.mainQueue];
     }
     return self;
 }
@@ -85,7 +85,6 @@ NSMutableDictionary *willDownloadToUrlMap;
                                                               assetArtworkData: nil
                                                                        options: nil];
         
-        // To better track the AVAssetDownloadTask, set the taskDescription to something unique for the sample.
         task.taskDescription = asset.uniqueId;
 
         activeDownloadsMap[task] = asset;
@@ -162,7 +161,7 @@ NSMutableDictionary *willDownloadToUrlMap;
         }
     }
 
-    // Check if there are any active downloads in flight.
+    // Check if there are any active downloads in queue.
     __block bool isAssetDownloading = false;
     [activeDownloadsMap enumerateKeysAndObjectsUsingBlock: ^(id _, id assetValue, BOOL *stop) {
         if ([assetValue isKindOfClass:[Asset class]]) {
@@ -231,7 +230,7 @@ didCompleteWithError:(NSError *)error {
     NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
 
     /*
-     This is the ideal place to begin downloading additional media selections
+     This is the place to begin downloading additional media selections
      once the asset itself has finished downloading.
      */
     AVAggregateAssetDownloadTask* aggregateAssetDownloadTask = (AVAggregateAssetDownloadTask *)task;
@@ -250,8 +249,7 @@ didCompleteWithError:(NSError *)error {
                     switch(error.code) {
                         case NSURLErrorCancelled: {
                             /*
-                             This task was canceled, should perform cleanup using the
-                             URL saved from AVAssetDownloadDelegate.urlSession(_:assetDownloadTask:didFinishDownloadingTo:).
+                             This task was canceled, should perform cleanup manually.
                              */
                             localAsset = [self localAssetForStream:asset.uniqueId];
                             if(localAsset != nil) {
@@ -279,7 +277,7 @@ didCompleteWithError:(NSError *)error {
                             return;
                         }
                         default: {
-                            NSLog(@"An unexpected error occured:%@", error.domain);
+                            NSLog(@"An unexpected error occured while downloading HLS asset:%@", error.domain);
                             return;
                         }
                     }
@@ -301,7 +299,7 @@ didCompleteWithError:(NSError *)error {
 - (void)URLSession:(NSURLSession *)session
 aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloadTask
  willDownloadToURL:(NSURL *)location {
-    NSLog(@"willDownloadToURL");
+    NSLog(@"HLS asset: willDownloadToURL");
     
     /*
      This delegate callback should only be used to save the location URL
@@ -315,20 +313,18 @@ aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloa
 - (void)URLSession:(NSURLSession *)session
 aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloadTask
 didCompleteForMediaSelection:(AVMediaSelection *)mediaSelection {
-    NSLog(@"didCompleteForMediaSelection");
+    NSLog(@"HLS asset: didCompleteForMediaSelection");
     /*
      This delegate callback provides an AVMediaSelection object which is now fully available for
      offline use.
      */
 
     Asset* asset = activeDownloadsMap[aggregateAssetDownloadTask];
-    if(asset == nil) {
-        return;
+    if(asset != nil) {
+        aggregateAssetDownloadTask.taskDescription = asset.uniqueId;
+
+        [aggregateAssetDownloadTask resume];
     }
-
-    aggregateAssetDownloadTask.taskDescription = asset.uniqueId;
-
-    [aggregateAssetDownloadTask resume];
 }
 
 /// Method to adopt to subscribe to progress updates of an AVAggregateAssetDownloadTask.
@@ -340,17 +336,15 @@ timeRangeExpectedToLoad:(CMTimeRange)timeRangeExpectedToLoad
  forMediaSelection:(AVMediaSelection *)mediaSelection {
     // This delegate callback should be used to provide download progress for AVAssetDownloadTask.
     Asset* asset = activeDownloadsMap[aggregateAssetDownloadTask];
-    if(asset == nil) {
-        return;
+    if(asset != nil) {
+        Float64 percentComplete = 0.0;
+        for (NSValue *value in loadedTimeRanges) {
+            CMTimeRange timeRange = [value CMTimeRangeValue];
+            percentComplete += CMTimeGetSeconds(timeRange.duration) / CMTimeGetSeconds(timeRangeExpectedToLoad.duration);
+        }
+        percentComplete *= 100;
+        NSLog(@"HLS Asset: Downloading progress: %ld", (long)percentComplete);
     }
-    
-    Float64 percentComplete = 0.0;
-    for (NSValue *value in loadedTimeRanges) {
-        CMTimeRange timeRange = [value CMTimeRangeValue];
-        percentComplete += CMTimeGetSeconds(timeRange.duration) / CMTimeGetSeconds(timeRangeExpectedToLoad.duration);
-    }
-    percentComplete *= 100;
-    NSLog(@"Progress: %ld", (long)percentComplete);
 }
 
 @end

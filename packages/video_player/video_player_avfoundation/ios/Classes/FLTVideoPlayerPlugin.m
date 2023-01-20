@@ -631,29 +631,29 @@ NS_INLINE UIViewController *rootViewController() {
             AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
             switch(assetDownloadState) {
                 case AssetDownloaded: {
-                    NSLog(@"Asset downloaded");
+                    NSLog(@"HLS asset is in cache");
                     // Can delete
                     //[AssetPersistenceManager.sharedManager deleteAsset:asset];
                     localAsset = [AssetPersistenceManager.sharedManager localAssetForStream:asset.uniqueId];
                     break;
                 }
                 case AssetDownloading: {
-                    NSLog(@"Asset downloading");
+                    NSLog(@"HLS asset is downloading");
                     // Can cancel
                     //[AssetPersistenceManager.sharedManager cancelDownload:asset];
                     localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
                     break;
                 }
                 case AssetNotDownloaded: {
-                    NSLog(@"Asset not downloaded");
+                    NSLog(@"HLS asset is not cached, starting download");
                     [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
-                    localAsset = [AssetPersistenceManager.sharedManager assetForStream:asset.uniqueId];
+                    localAsset = asset;
                     break;
                 }
             }
         } else {
-            NSLog(@"Asset manager not yet ready");
-            finalUrlAsset = asset.urlAsset;
+            NSLog(@"Asset manager not initialized (did you forget to restore state in AppDelegate?)");
+            localAsset = asset;
         }
              
         player = [[FLTVideoPlayer alloc] initWithURLAsset:localAsset.urlAsset
