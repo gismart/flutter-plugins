@@ -623,7 +623,6 @@ NS_INLINE UIViewController *rootViewController() {
         
         AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
         Asset* localAsset;
-        AVURLAsset* finalUrlAsset;
         
         Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
         

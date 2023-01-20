@@ -227,8 +227,10 @@ NSMutableDictionary *willDownloadToUrlMap;
 - (void)URLSession:(NSURLSession *)session
               task:(NSURLSessionTask *)task
 didCompleteWithError:(NSError *)error {
+    NSLog(@"HLS asset: didComplete");
+    
     NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-
+    
     /*
      This is the place to begin downloading additional media selections
      once the asset itself has finished downloading.
@@ -247,38 +249,25 @@ didCompleteWithError:(NSError *)error {
                     Asset* localAsset;
                     NSURL* localFileLocation;
                     switch(error.code) {
-                        case NSURLErrorCancelled: {
+                        case NSURLErrorUnknown: {
+                            NSLog(@"Downloading HLS streams is not supported in the simulator.");
+                            return;
+                        }
+                        default: {
                             /*
-                             This task was canceled, should perform cleanup manually.
+                             This task was cancelled or failed, should perform cleanup manually.
                              */
-                            localAsset = [self localAssetForStream:asset.uniqueId];
-                            if(localAsset != nil) {
-                                localFileLocation = localAsset.urlAsset.URL;
-                            } else {
-                                return;
-                            }
-
+                            NSLog(@"Failed to finish downloading an HLS stream, performing clean-up.");
+                            
                             NSFileManager* defaultFileManager = [NSFileManager defaultManager];
                             @try {
-                                [defaultFileManager removeItemAtURL:localFileLocation error:nil];
+                                [defaultFileManager removeItemAtURL:downloadURL error:nil];
                                 
                                 [userDefaults removeObjectForKey:asset.uniqueId];
                             } @catch (NSException *exception) {
                                 NSLog(@"An error occured trying to delete the contents on disk for:%@: %@", asset.uniqueId, error);
                             }
                             break;
-                        }
-                        case NSURLErrorDataNotAllowed: {
-                            // Called if Internet gets disconnected
-                            break;
-                        }
-                        case NSURLErrorUnknown: {
-                            NSLog(@"Downloading HLS streams is not supported in the simulator.");
-                            return;
-                        }
-                        default: {
-                            NSLog(@"An unexpected error occured while downloading HLS asset:%@", error.domain);
-                            return;
                         }
                     }
                 } else {
