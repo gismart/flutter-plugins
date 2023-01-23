@@ -416,12 +416,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     super.dispose();
   }
 
-  /// Starts background caching if source is an HLS stream with no active/finished caching job.
-  Future<void> startHlsStreamCachingIfNeeded() {
-    late final DataSource dataSourceDescription = _obtainDataSource();
-    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(dataSourceDescription);
-  }
-
   /// Starts playing the video.
   ///
   /// If the video is at the end, this method starts playing from the beginning.
@@ -705,6 +699,19 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   }
 
   bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
+}
+
+/// Manager for HLS cache
+class VideoPlayerHlsManager {
+  /// Starts background caching if source is an HLS stream with no active/finished caching job.
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
+    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(urlString, streamName);
+  }
+
+  /// Checks whether the given HLS stream is available for offline playback.
+  Future<bool> isHlsAvailableOffline(String urlString) {
+    return _videoPlayerPlatform.isHlsAvailableOffline(urlString);
+  }
 }
 
 class _VideoAppLifeCycleObserver extends Object with WidgetsBindingObserver {

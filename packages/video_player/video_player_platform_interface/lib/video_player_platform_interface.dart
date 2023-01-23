@@ -69,8 +69,13 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   }
 
   /// Starts background caching if source is an HLS stream with no active/finished caching job.
-  Future<void> startHlsStreamCachingIfNeeded(DataSource dataSource) {
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
     throw UnimplementedError('startHlsStreamCachingIfNeeded() has not been implemented.');
+  }
+
+  /// Checks whether the given HLS stream is available for offline playback.
+  Future<bool> isHlsAvailableOffline(String urlString) {
+    throw UnimplementedError('isHlsAvailableOffline() has not been implemented.');
   }
 
   /// Starts the video playback.

@@ -27,22 +27,22 @@ dependencies:
     git:
       url: https://github.com/gismart/flutter-plugins.git
       path: packages/video_player/video_player_android
-      ref: video_player-v2.4.10-2-gismart
+      ref: video_player-v2.4.10-3-gismart
   video_player_avfoundation:
     git:
       url: https://github.com/gismart/flutter-plugins.git
       path: packages/video_player/video_player_avfoundation
-      ref: video_player-v2.4.10-2-gismart
+      ref: video_player-v2.4.10-3-gismart
   video_player_platform_interface:
     git:
       url: https://github.com/gismart/flutter-plugins.git
       path: packages/video_player/video_player_platform_interface
-      ref: video_player-v2.4.10-2-gismart
+      ref: video_player-v2.4.10-3-gismart
   video_player_web:
     git:
       url: https://github.com/gismart/flutter-plugins.git
       path: packages/video_player/video_player_web
-      ref: video_player-v2.4.10-2-gismart
+      ref: video_player-v2.4.10-3-gismart
 
 dev_dependencies:
   flutter_test:

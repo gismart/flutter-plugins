@@ -88,9 +88,24 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<void> startHlsStreamCachingIfNeeded(DataSource dataSource) {
-    final CreateMessage message = _obtainCreateMessageFromDataSource(dataSource);
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
+    final HlsStreamMessage message = HlsStreamMessage(
+      uri: urlString,
+      name: streamName,
+      httpHeaders: <String?, String?>{},
+    );
     return _api.startHlsStreamCachingIfNeeded(message);
+  }
+
+  @override
+  Future<bool> isHlsAvailableOffline(String urlString) async {
+    final HlsStreamMessage message = HlsStreamMessage(
+      uri: urlString,
+      httpHeaders: <String?, String?>{},
+    );
+    return _api
+        .isHlsAvailableOffline(message)
+        .then((IsHlsAvailableOfflineMessage message) => message.isAvailableOffline != 0);
   }
 
   @override
@@ -122,8 +137,7 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   @override
   Future<void> setActiveAudioTrack(int textureId, String audioTrackName) {
     return _api.setActiveAudioTrack(
-      AudioTrackMessage(textureId: textureId)
-        ..audioTrackNames = <String>[audioTrackName],
+      AudioTrackMessage(textureId: textureId)..audioTrackNames = <String>[audioTrackName],
     );
   }
 

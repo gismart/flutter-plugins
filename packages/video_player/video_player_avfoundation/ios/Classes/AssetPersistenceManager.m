@@ -221,7 +221,7 @@ NSMutableDictionary *willDownloadToUrlMap;
 - (void)URLSession:(NSURLSession *)session
               task:(NSURLSessionTask *)task
 didCompleteWithError:(NSError *)error {
-    NSLog(@"HLS asset: didComplete");
+    NSLog(@"HLS Asset: Completed download");
     
     NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
     
@@ -282,7 +282,7 @@ didCompleteWithError:(NSError *)error {
 - (void)URLSession:(NSURLSession *)session
 aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloadTask
  willDownloadToURL:(NSURL *)location {
-    NSLog(@"HLS asset: willDownloadToURL");
+    NSLog(@"HLS Asset: Local URL assigned");
     
     /*
      This delegate callback should only be used to save the location URL
@@ -296,7 +296,7 @@ aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloa
 - (void)URLSession:(NSURLSession *)session
 aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloadTask
 didCompleteForMediaSelection:(AVMediaSelection *)mediaSelection {
-    NSLog(@"HLS asset: didCompleteForMediaSelection");
+    NSLog(@"HLS Asset: Completed downloading MediaSelection");
     /*
      This delegate callback provides an AVMediaSelection object which is now fully available for
      offline use.
