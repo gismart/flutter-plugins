@@ -701,15 +701,15 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   bool get _isDisposedOrNotInitialized => _isDisposed || !value.isInitialized;
 }
 
-/// Helper utils to be used with HLS streams
-extension VideoPlayerHlsUtils on VideoPlayerController {
+/// Manager for HLS cache
+class VideoPlayerHlsManager {
   /// Starts background caching if source is an HLS stream with no active/finished caching job.
-  static Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
     return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(urlString, streamName);
   }
 
   /// Checks whether the given HLS stream is available for offline playback.
-  static Future<bool> isHlsAvailableOffline(String urlString) {
+  Future<bool> isHlsAvailableOffline(String urlString) {
     return _videoPlayerPlatform.isHlsAvailableOffline(urlString);
   }
 }
