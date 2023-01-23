@@ -62,6 +62,10 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
 + (FLTCreateMessage *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
 @end
+@interface FLTHlsStreamMessage ()
++ (FLTHlsStreamMessage *)fromMap:(NSDictionary *)dict;
+- (NSDictionary *)toMap;
+@end
 @interface FLTIsHlsAvailableOfflineMessage ()
 + (FLTIsHlsAvailableOfflineMessage *)fromMap:(NSDictionary *)dict;
 - (NSDictionary *)toMap;
@@ -227,6 +231,29 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
 }
 @end
 
+@implementation FLTHlsStreamMessage
++ (instancetype)makeWithUri:(nullable NSString *)uri
+    name:(nullable NSString *)name
+    httpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders {
+  FLTHlsStreamMessage* pigeonResult = [[FLTHlsStreamMessage alloc] init];
+  pigeonResult.uri = uri;
+  pigeonResult.name = name;
+  pigeonResult.httpHeaders = httpHeaders;
+  return pigeonResult;
+}
++ (FLTHlsStreamMessage *)fromMap:(NSDictionary *)dict {
+  FLTHlsStreamMessage *pigeonResult = [[FLTHlsStreamMessage alloc] init];
+  pigeonResult.uri = GetNullableObject(dict, @"uri");
+  pigeonResult.name = GetNullableObject(dict, @"name");
+  pigeonResult.httpHeaders = GetNullableObject(dict, @"httpHeaders");
+  NSAssert(pigeonResult.httpHeaders != nil, @"");
+  return pigeonResult;
+}
+- (NSDictionary *)toMap {
+  return [NSDictionary dictionaryWithObjectsAndKeys:(self.uri ? self.uri : [NSNull null]), @"uri", (self.name ? self.name : [NSNull null]), @"name", (self.httpHeaders ? self.httpHeaders : [NSNull null]), @"httpHeaders", nil];
+}
+@end
+
 @implementation FLTIsHlsAvailableOfflineMessage
 + (instancetype)makeWithIsAvailableOffline:(NSNumber *)isAvailableOffline {
   FLTIsHlsAvailableOfflineMessage* pigeonResult = [[FLTIsHlsAvailableOfflineMessage alloc] init];
@@ -274,24 +301,27 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
       return [FLTCreateMessage fromMap:[self readValue]];
     
     case 130:     
-      return [FLTIsHlsAvailableOfflineMessage fromMap:[self readValue]];
+      return [FLTHlsStreamMessage fromMap:[self readValue]];
     
     case 131:     
-      return [FLTLoopingMessage fromMap:[self readValue]];
+      return [FLTIsHlsAvailableOfflineMessage fromMap:[self readValue]];
     
     case 132:     
-      return [FLTMixWithOthersMessage fromMap:[self readValue]];
+      return [FLTLoopingMessage fromMap:[self readValue]];
     
     case 133:     
-      return [FLTPlaybackSpeedMessage fromMap:[self readValue]];
+      return [FLTMixWithOthersMessage fromMap:[self readValue]];
     
     case 134:     
-      return [FLTPositionMessage fromMap:[self readValue]];
+      return [FLTPlaybackSpeedMessage fromMap:[self readValue]];
     
     case 135:     
-      return [FLTTextureMessage fromMap:[self readValue]];
+      return [FLTPositionMessage fromMap:[self readValue]];
     
     case 136:     
+      return [FLTTextureMessage fromMap:[self readValue]];
+    
+    case 137:     
       return [FLTVolumeMessage fromMap:[self readValue]];
     
     default:    
@@ -314,32 +344,36 @@ static id GetNullableObjectAtIndex(NSArray* array, NSInteger key) {
     [self writeByte:129];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[FLTIsHlsAvailableOfflineMessage class]]) {
+  if ([value isKindOfClass:[FLTHlsStreamMessage class]]) {
     [self writeByte:130];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[FLTLoopingMessage class]]) {
+  if ([value isKindOfClass:[FLTIsHlsAvailableOfflineMessage class]]) {
     [self writeByte:131];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[FLTMixWithOthersMessage class]]) {
+  if ([value isKindOfClass:[FLTLoopingMessage class]]) {
     [self writeByte:132];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[FLTPlaybackSpeedMessage class]]) {
+  if ([value isKindOfClass:[FLTMixWithOthersMessage class]]) {
     [self writeByte:133];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[FLTPositionMessage class]]) {
+  if ([value isKindOfClass:[FLTPlaybackSpeedMessage class]]) {
     [self writeByte:134];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[FLTTextureMessage class]]) {
+  if ([value isKindOfClass:[FLTPositionMessage class]]) {
     [self writeByte:135];
     [self writeValue:[value toMap]];
   } else 
-  if ([value isKindOfClass:[FLTVolumeMessage class]]) {
+  if ([value isKindOfClass:[FLTTextureMessage class]]) {
     [self writeByte:136];
+    [self writeValue:[value toMap]];
+  } else 
+  if ([value isKindOfClass:[FLTVolumeMessage class]]) {
+    [self writeByte:137];
     [self writeValue:[value toMap]];
   } else 
 {
@@ -579,7 +613,7 @@ void FLTAVFoundationVideoPlayerApiSetup(id<FlutterBinaryMessenger> binaryMesseng
       NSCAssert([api respondsToSelector:@selector(startHlsStreamCachingIfNeeded:error:)], @"FLTAVFoundationVideoPlayerApi api (%@) doesn't respond to @selector(startHlsStreamCachingIfNeeded:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        FLTCreateMessage *arg_msg = GetNullableObjectAtIndex(args, 0);
+        FLTHlsStreamMessage *arg_msg = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
         [api startHlsStreamCachingIfNeeded:arg_msg error:&error];
         callback(wrapResult(nil, error));
@@ -599,7 +633,7 @@ void FLTAVFoundationVideoPlayerApiSetup(id<FlutterBinaryMessenger> binaryMesseng
       NSCAssert([api respondsToSelector:@selector(isHlsAvailableOffline:error:)], @"FLTAVFoundationVideoPlayerApi api (%@) doesn't respond to @selector(isHlsAvailableOffline:error:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
-        FLTCreateMessage *arg_msg = GetNullableObjectAtIndex(args, 0);
+        FLTHlsStreamMessage *arg_msg = GetNullableObjectAtIndex(args, 0);
         FlutterError *error;
         FLTIsHlsAvailableOfflineMessage *output = [api isHlsAvailableOffline:arg_msg error:&error];
         callback(wrapResult(output, error));

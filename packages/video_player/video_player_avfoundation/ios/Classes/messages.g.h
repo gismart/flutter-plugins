@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FLTPlaybackSpeedMessage;
 @class FLTPositionMessage;
 @class FLTCreateMessage;
+@class FLTHlsStreamMessage;
 @class FLTIsHlsAvailableOfflineMessage;
 @class FLTMixWithOthersMessage;
 
@@ -92,6 +93,17 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong) NSDictionary<NSString *, NSString *> * httpHeaders;
 @end
 
+@interface FLTHlsStreamMessage : NSObject
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)makeWithUri:(nullable NSString *)uri
+    name:(nullable NSString *)name
+    httpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders;
+@property(nonatomic, copy, nullable) NSString * uri;
+@property(nonatomic, copy, nullable) NSString * name;
+@property(nonatomic, strong) NSDictionary<NSString *, NSString *> * httpHeaders;
+@end
+
 @interface FLTIsHlsAvailableOfflineMessage : NSObject
 /// `init` unavailable to enforce nonnull fields, see the `make` class method.
 - (instancetype)init NS_UNAVAILABLE;
@@ -123,9 +135,9 @@ NSObject<FlutterMessageCodec> *FLTAVFoundationVideoPlayerApiGetCodec(void);
 - (void)setActiveAudioTrack:(FLTAudioTrackMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setActiveAudioTrackByIndex:(FLTAudioTrackMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setPlaybackSpeed:(FLTPlaybackSpeedMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
-- (void)startHlsStreamCachingIfNeeded:(FLTCreateMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
+- (void)startHlsStreamCachingIfNeeded:(FLTHlsStreamMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
-- (nullable FLTIsHlsAvailableOfflineMessage *)isHlsAvailableOffline:(FLTCreateMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
+- (nullable FLTIsHlsAvailableOfflineMessage *)isHlsAvailableOffline:(FLTHlsStreamMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)play:(FLTTextureMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
 - (nullable FLTPositionMessage *)position:(FLTTextureMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;

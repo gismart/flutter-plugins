@@ -626,7 +626,7 @@ NS_INLINE UIViewController *rootViewController() {
         
         Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
         
-        if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
+        if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager) {
             AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
             switch(assetDownloadState) {
                 case AssetDownloaded: {
@@ -695,11 +695,11 @@ NS_INLINE UIViewController *rootViewController() {
   [player setVolume:input.volume.doubleValue];
 }
 
-- (void)startHlsStreamCachingIfNeeded:(FLTCreateMessage *)input error:(FlutterError **)error {
+- (void)startHlsStreamCachingIfNeeded:(FLTHlsStreamMessage *)input error:(FlutterError **)error {
     if (input.uri != nil) {
         NSURL* remoteUrl = [NSURL URLWithString:input.uri];
         if([self isHlsStream:remoteUrl]) {
-            if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
+            if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager) {
                 AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
                 
                 Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
@@ -715,24 +715,24 @@ NS_INLINE UIViewController *rootViewController() {
     }
 }
 
-- (FLTIsHlsAvailableOfflineMessage *)isHlsAvailableOffline:(FLTCreateMessage *)input error:(FlutterError **)error {
+- (FLTIsHlsAvailableOfflineMessage *)isHlsAvailableOffline:(FLTHlsStreamMessage *)input error:(FlutterError **)error {
     if (input.uri != nil) {
         NSURL* remoteUrl = [NSURL URLWithString:input.uri];
         if([self isHlsStream:remoteUrl]) {
-            if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager == true) {
+            if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager) {
                 AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
                 Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
                 
                 AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
                 if (assetDownloadState == AssetDownloaded) {
-                    return [FLTIsHlsAvailableOfflineMessage makeWithIsAvailableOffline:@1];
+                    return [FLTIsHlsAvailableOfflineMessage makeWithIsAvailableOffline:@true];
                 }
             } else {
                 NSLog(@"Asset manager not initialized (did you forget to restore state in AppDelegate?)");
             }
         }
     }
-    return [FLTIsHlsAvailableOfflineMessage makeWithIsAvailableOffline:@0];
+    return [FLTIsHlsAvailableOfflineMessage makeWithIsAvailableOffline:@false];
 }
 
 - (AVURLAsset*)createAVURLAssetWithHttpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders remoteUrl:(NSURL *)remoteUrl {

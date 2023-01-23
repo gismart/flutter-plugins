@@ -202,12 +202,41 @@ class CreateMessage {
   }
 }
 
+class HlsStreamMessage {
+  HlsStreamMessage({
+    this.uri,
+    this.name,
+    required this.httpHeaders,
+  });
+
+  String? uri;
+  String? name;
+  Map<String?, String?> httpHeaders;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['uri'] = uri;
+    pigeonMap['name'] = name;
+    pigeonMap['httpHeaders'] = httpHeaders;
+    return pigeonMap;
+  }
+
+  static HlsStreamMessage decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return HlsStreamMessage(
+      uri: pigeonMap['uri'] as String?,
+      name: pigeonMap['name'] as String?,
+      httpHeaders: (pigeonMap['httpHeaders'] as Map<Object?, Object?>?)!.cast<String?, String?>(),
+    );
+  }
+}
+
 class IsHlsAvailableOfflineMessage {
   IsHlsAvailableOfflineMessage({
     required this.isAvailableOffline,
   });
 
-  bool isAvailableOffline;
+  int isAvailableOffline;
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
@@ -218,7 +247,7 @@ class IsHlsAvailableOfflineMessage {
   static IsHlsAvailableOfflineMessage decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
     return IsHlsAvailableOfflineMessage(
-      isAvailableOffline: pigeonMap['isAvailableOffline']! as bool,
+      isAvailableOffline: pigeonMap['isAvailableOffline']! as int,
     );
   }
 }
@@ -256,32 +285,36 @@ class _AVFoundationVideoPlayerApiCodec extends StandardMessageCodec {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is IsHlsAvailableOfflineMessage) {
+    if (value is HlsStreamMessage) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
-    if (value is LoopingMessage) {
+    if (value is IsHlsAvailableOfflineMessage) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MixWithOthersMessage) {
+    if (value is LoopingMessage) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else 
-    if (value is PlaybackSpeedMessage) {
+    if (value is MixWithOthersMessage) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
     } else 
-    if (value is PositionMessage) {
+    if (value is PlaybackSpeedMessage) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else 
-    if (value is TextureMessage) {
+    if (value is PositionMessage) {
       buffer.putUint8(135);
       writeValue(buffer, value.encode());
     } else 
-    if (value is VolumeMessage) {
+    if (value is TextureMessage) {
       buffer.putUint8(136);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is VolumeMessage) {
+      buffer.putUint8(137);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -298,24 +331,27 @@ class _AVFoundationVideoPlayerApiCodec extends StandardMessageCodec {
         return CreateMessage.decode(readValue(buffer)!);
       
       case 130:       
-        return IsHlsAvailableOfflineMessage.decode(readValue(buffer)!);
+        return HlsStreamMessage.decode(readValue(buffer)!);
       
       case 131:       
-        return LoopingMessage.decode(readValue(buffer)!);
+        return IsHlsAvailableOfflineMessage.decode(readValue(buffer)!);
       
       case 132:       
-        return MixWithOthersMessage.decode(readValue(buffer)!);
+        return LoopingMessage.decode(readValue(buffer)!);
       
       case 133:       
-        return PlaybackSpeedMessage.decode(readValue(buffer)!);
+        return MixWithOthersMessage.decode(readValue(buffer)!);
       
       case 134:       
-        return PositionMessage.decode(readValue(buffer)!);
+        return PlaybackSpeedMessage.decode(readValue(buffer)!);
       
       case 135:       
-        return TextureMessage.decode(readValue(buffer)!);
+        return PositionMessage.decode(readValue(buffer)!);
       
       case 136:       
+        return TextureMessage.decode(readValue(buffer)!);
+      
+      case 137:       
         return VolumeMessage.decode(readValue(buffer)!);
       
       default:      
@@ -570,7 +606,7 @@ class AVFoundationVideoPlayerApi {
     }
   }
 
-  Future<void> startHlsStreamCachingIfNeeded(CreateMessage arg_msg) async {
+  Future<void> startHlsStreamCachingIfNeeded(HlsStreamMessage arg_msg) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AVFoundationVideoPlayerApi.startHlsStreamCachingIfNeeded', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
@@ -592,7 +628,7 @@ class AVFoundationVideoPlayerApi {
     }
   }
 
-  Future<IsHlsAvailableOfflineMessage> isHlsAvailableOffline(CreateMessage arg_msg) async {
+  Future<IsHlsAvailableOfflineMessage> isHlsAvailableOffline(HlsStreamMessage arg_msg) async {
     final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
         'dev.flutter.pigeon.AVFoundationVideoPlayerApi.isHlsAvailableOffline', codec, binaryMessenger: _binaryMessenger);
     final Map<Object?, Object?>? replyMap =
