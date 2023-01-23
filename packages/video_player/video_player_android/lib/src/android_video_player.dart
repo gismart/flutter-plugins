@@ -67,7 +67,7 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<int?> createWithHlsCachingSupport(DataSource dataSource) async {
+  Future<int?> createWithHlsCachingSupport(DataSource dataSource) {
     // HLS caching is not supported on Android
     return create(dataSource);
   }
@@ -84,6 +84,12 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
   Future<void> startHlsStreamCachingIfNeeded(DataSource dataSource) {
     // HLS caching is not supported on Android
     return Future<void>.value();
+  }
+
+  @override
+  Future<bool> isHlsAvailableOffline(DataSource dataSource) {
+    // HLS caching is not supported on Android
+    return Future<bool>.value(false);
   }
 
   @override

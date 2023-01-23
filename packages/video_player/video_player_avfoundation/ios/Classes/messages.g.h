@@ -18,6 +18,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class FLTPlaybackSpeedMessage;
 @class FLTPositionMessage;
 @class FLTCreateMessage;
+@class FLTIsHlsAvailableOfflineMessage;
 @class FLTMixWithOthersMessage;
 
 @interface FLTTextureMessage : NSObject
@@ -91,6 +92,13 @@ NS_ASSUME_NONNULL_BEGIN
 @property(nonatomic, strong) NSDictionary<NSString *, NSString *> * httpHeaders;
 @end
 
+@interface FLTIsHlsAvailableOfflineMessage : NSObject
+/// `init` unavailable to enforce nonnull fields, see the `make` class method.
+- (instancetype)init NS_UNAVAILABLE;
++ (instancetype)makeWithIsAvailableOffline:(NSNumber *)isAvailableOffline;
+@property(nonatomic, strong) NSNumber * isAvailableOffline;
+@end
+
 @interface FLTMixWithOthersMessage : NSObject
 /// `init` unavailable to enforce nonnull fields, see the `make` class method.
 - (instancetype)init NS_UNAVAILABLE;
@@ -116,6 +124,8 @@ NSObject<FlutterMessageCodec> *FLTAVFoundationVideoPlayerApiGetCodec(void);
 - (void)setActiveAudioTrackByIndex:(FLTAudioTrackMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)setPlaybackSpeed:(FLTPlaybackSpeedMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)startHlsStreamCachingIfNeeded:(FLTCreateMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
+/// @return `nil` only when `error != nil`.
+- (nullable FLTIsHlsAvailableOfflineMessage *)isHlsAvailableOffline:(FLTCreateMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 - (void)play:(FLTTextureMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;
 /// @return `nil` only when `error != nil`.
 - (nullable FLTPositionMessage *)position:(FLTTextureMessage *)msg error:(FlutterError *_Nullable *_Nonnull)error;

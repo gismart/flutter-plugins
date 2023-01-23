@@ -202,6 +202,27 @@ class CreateMessage {
   }
 }
 
+class IsHlsAvailableOfflineMessage {
+  IsHlsAvailableOfflineMessage({
+    required this.isAvailableOffline,
+  });
+
+  bool isAvailableOffline;
+
+  Object encode() {
+    final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
+    pigeonMap['isAvailableOffline'] = isAvailableOffline;
+    return pigeonMap;
+  }
+
+  static IsHlsAvailableOfflineMessage decode(Object message) {
+    final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
+    return IsHlsAvailableOfflineMessage(
+      isAvailableOffline: pigeonMap['isAvailableOffline']! as bool,
+    );
+  }
+}
+
 class MixWithOthersMessage {
   MixWithOthersMessage({
     required this.mixWithOthers,
@@ -235,28 +256,32 @@ class _AVFoundationVideoPlayerApiCodec extends StandardMessageCodec {
       buffer.putUint8(129);
       writeValue(buffer, value.encode());
     } else 
-    if (value is LoopingMessage) {
+    if (value is IsHlsAvailableOfflineMessage) {
       buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else 
-    if (value is MixWithOthersMessage) {
+    if (value is LoopingMessage) {
       buffer.putUint8(131);
       writeValue(buffer, value.encode());
     } else 
-    if (value is PlaybackSpeedMessage) {
+    if (value is MixWithOthersMessage) {
       buffer.putUint8(132);
       writeValue(buffer, value.encode());
     } else 
-    if (value is PositionMessage) {
+    if (value is PlaybackSpeedMessage) {
       buffer.putUint8(133);
       writeValue(buffer, value.encode());
     } else 
-    if (value is TextureMessage) {
+    if (value is PositionMessage) {
       buffer.putUint8(134);
       writeValue(buffer, value.encode());
     } else 
-    if (value is VolumeMessage) {
+    if (value is TextureMessage) {
       buffer.putUint8(135);
+      writeValue(buffer, value.encode());
+    } else 
+    if (value is VolumeMessage) {
+      buffer.putUint8(136);
       writeValue(buffer, value.encode());
     } else 
 {
@@ -273,21 +298,24 @@ class _AVFoundationVideoPlayerApiCodec extends StandardMessageCodec {
         return CreateMessage.decode(readValue(buffer)!);
       
       case 130:       
-        return LoopingMessage.decode(readValue(buffer)!);
+        return IsHlsAvailableOfflineMessage.decode(readValue(buffer)!);
       
       case 131:       
-        return MixWithOthersMessage.decode(readValue(buffer)!);
+        return LoopingMessage.decode(readValue(buffer)!);
       
       case 132:       
-        return PlaybackSpeedMessage.decode(readValue(buffer)!);
+        return MixWithOthersMessage.decode(readValue(buffer)!);
       
       case 133:       
-        return PositionMessage.decode(readValue(buffer)!);
+        return PlaybackSpeedMessage.decode(readValue(buffer)!);
       
       case 134:       
-        return TextureMessage.decode(readValue(buffer)!);
+        return PositionMessage.decode(readValue(buffer)!);
       
       case 135:       
+        return TextureMessage.decode(readValue(buffer)!);
+      
+      case 136:       
         return VolumeMessage.decode(readValue(buffer)!);
       
       default:      
@@ -561,6 +589,33 @@ class AVFoundationVideoPlayerApi {
       );
     } else {
       return;
+    }
+  }
+
+  Future<IsHlsAvailableOfflineMessage> isHlsAvailableOffline(CreateMessage arg_msg) async {
+    final BasicMessageChannel<Object?> channel = BasicMessageChannel<Object?>(
+        'dev.flutter.pigeon.AVFoundationVideoPlayerApi.isHlsAvailableOffline', codec, binaryMessenger: _binaryMessenger);
+    final Map<Object?, Object?>? replyMap =
+        await channel.send(<Object?>[arg_msg]) as Map<Object?, Object?>?;
+    if (replyMap == null) {
+      throw PlatformException(
+        code: 'channel-error',
+        message: 'Unable to establish connection on channel.',
+      );
+    } else if (replyMap['error'] != null) {
+      final Map<Object?, Object?> error = (replyMap['error'] as Map<Object?, Object?>?)!;
+      throw PlatformException(
+        code: (error['code'] as String?)!,
+        message: error['message'] as String?,
+        details: error['details'],
+      );
+    } else if (replyMap['result'] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (replyMap['result'] as IsHlsAvailableOfflineMessage?)!;
     }
   }
 

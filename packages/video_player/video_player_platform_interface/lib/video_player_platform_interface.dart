@@ -73,6 +73,11 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
     throw UnimplementedError('startHlsStreamCachingIfNeeded() has not been implemented.');
   }
 
+  /// Checks whether the given HLS stream is available for offline playback.
+  Future<bool> isHlsAvailableOffline(DataSource dataSource) {
+    throw UnimplementedError('isHlsAvailableOffline() has not been implemented.');
+  }
+
   /// Starts the video playback.
   Future<void> play(int textureId) {
     throw UnimplementedError('play() has not been implemented.');

@@ -94,6 +94,12 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
+  Future<bool> isHlsAvailableOffline(DataSource dataSource) async {
+    final CreateMessage message = _obtainCreateMessageFromDataSource(dataSource);
+    return (await _api.isHlsAvailableOffline(message)).isAvailableOffline;
+  }
+
+  @override
   Future<void> play(int textureId) {
     return _api.play(TextureMessage(textureId: textureId));
   }

@@ -60,6 +60,11 @@ class CreateMessage {
   Map<String?, String?> httpHeaders;
 }
 
+class IsHlsAvailableOfflineMessage {
+  IsHlsAvailableOfflineMessage(this.isAvailableOffline);
+  bool isAvailableOffline;
+}
+
 class MixWithOthersMessage {
   MixWithOthersMessage(this.mixWithOthers);
   bool mixWithOthers;
@@ -89,6 +94,8 @@ abstract class AVFoundationVideoPlayerApi {
   void setPlaybackSpeed(PlaybackSpeedMessage msg);
   @ObjCSelector('startHlsStreamCachingIfNeeded:')
   void startHlsStreamCachingIfNeeded(CreateMessage msg);
+  @ObjCSelector('isHlsAvailableOffline:')
+  IsHlsAvailableOfflineMessage isHlsAvailableOffline(CreateMessage msg);
   @ObjCSelector('play:')
   void play(TextureMessage msg);
   @ObjCSelector('position:')
