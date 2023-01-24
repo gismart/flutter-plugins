@@ -220,6 +220,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       : _closedCaptionFileFuture = closedCaptionFile,
         dataSourceType = DataSourceType.asset,
         formatHint = null,
+        name = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
 
@@ -235,6 +236,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   VideoPlayerController.network(
     this.dataSource, {
     this.formatHint,
+    this.name,
     Future<ClosedCaptionFile>? closedCaptionFile,
     this.videoPlayerOptions,
     this.httpHeaders = const <String, String>{},
@@ -252,6 +254,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         dataSource = Uri.file(file.absolute.path).toString(),
         dataSourceType = DataSourceType.file,
         package = null,
+        name = null,
         formatHint = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
@@ -268,6 +271,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         dataSource = contentUri.toString(),
         dataSourceType = DataSourceType.contentUri,
         package = null,
+        name = null,
         formatHint = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
@@ -294,6 +298,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Only set for [asset] videos. The package that the asset was loaded from.
   final String? package;
+
+  /// Only set for [network] HLS videos. User-friendly name of the stream to be shown in Settings.
+  final String? name;
 
   Future<ClosedCaptionFile>? _closedCaptionFileFuture;
   ClosedCaptionFile? _closedCaptionFile;
@@ -458,6 +465,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           uri: dataSource,
           formatHint: formatHint,
           httpHeaders: httpHeaders,
+          name: name,
         );
       case DataSourceType.file:
         return DataSource(
