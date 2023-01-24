@@ -2,6 +2,7 @@ name: video_player_android
 description: Android implementation of the video_player plugin.
 repository: https://github.com/flutter/plugins/tree/main/packages/video_player/video_player_android
 issue_tracker: https://github.com/flutter/flutter/issues?q=is%3Aissue+is%3Aopen+label%3A%22p%3A+video_player%22
+publish_to: none
 version: 2.3.10
 
 environment:
@@ -24,7 +25,7 @@ dependencies:
     git:
       url: https://github.com/gismart/flutter-plugins.git
       path: packages/video_player/video_player_platform_interface
-      ref: video_player-v2.4.10-3-gismart
+      ref: video_player-v2.4.10-4-gismart
 
 dev_dependencies:
   flutter_test:

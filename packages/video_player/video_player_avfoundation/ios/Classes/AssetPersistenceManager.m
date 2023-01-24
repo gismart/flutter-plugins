@@ -75,13 +75,12 @@ NSMutableDictionary *willDownloadToUrlMap;
      Creates and initializes an AVAggregateAssetDownloadTask to download multiple AVMediaSelections
      on an AVURLAsset.
      */
-    AVAggregateAssetDownloadTask* task;
     @try {
-        task = [assetDownloadURLSession aggregateAssetDownloadTaskWithURLAsset: asset.urlAsset
-                                                               mediaSelections: preferredMediaSelections
-                                                                    assetTitle: streamName
-                                                              assetArtworkData: nil
-                                                                       options: nil];
+        AVAggregateAssetDownloadTask* task = [assetDownloadURLSession aggregateAssetDownloadTaskWithURLAsset: asset.urlAsset
+                                                                                             mediaSelections: preferredMediaSelections
+                                                                                                  assetTitle: streamName
+                                                                                            assetArtworkData: nil
+                                                                                                     options: nil];
         
         task.taskDescription = asset.uniqueId;
 
