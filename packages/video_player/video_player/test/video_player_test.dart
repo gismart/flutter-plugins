@@ -53,7 +53,7 @@ class FakeController extends ValueNotifier<VideoPlayerValue>
   Future<void> setPlaybackSpeed(double speed) async {}
 
   @override
-  Future<void> initialize() async {}
+  Future<void> initialize({bool enableHlsCaching = false}) async {}
 
   @override
   Future<void> pause() async {}
@@ -80,6 +80,21 @@ class FakeController extends ValueNotifier<VideoPlayerValue>
   Future<void> setClosedCaptionFile(
     Future<ClosedCaptionFile>? closedCaptionFile,
   ) async {}
+
+  @override
+  Future<List<dynamic>> getAvailableAudioTracksList() {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setActiveAudioTrack(String audioTrackName) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> setActiveAudioTrackByIndex(int index) {
+    throw UnimplementedError();
+  }
 }
 
 Future<ClosedCaptionFile> _loadClosedCaption() async =>
