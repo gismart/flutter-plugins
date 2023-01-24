@@ -538,6 +538,7 @@ NS_INLINE UIViewController *rootViewController() {
 @implementation FLTVideoPlayerPlugin
 + (void)registerWithRegistrar:(NSObject<FlutterPluginRegistrar> *)registrar {
   FLTVideoPlayerPlugin *instance = [[FLTVideoPlayerPlugin alloc] initWithRegistrar:registrar];
+  [AssetPersistenceManager.sharedManager restorePersistenceManager];
   [registrar publish:instance];
   FLTAVFoundationVideoPlayerApiSetup(registrar.messenger, instance);
 }
