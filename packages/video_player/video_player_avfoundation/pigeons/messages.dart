@@ -57,13 +57,15 @@ class CreateMessage {
   String? packageName;
   String? formatHint;
   String? name;
+  String? audioTrackName;
   Map<String?, String?> httpHeaders;
 }
 
 class HlsStreamMessage {
-  HlsStreamMessage({this.uri, this.name, required this.httpHeaders});
-  String? uri;
+  HlsStreamMessage({required this.uri, this.name, required this.httpHeaders});
+  String uri;
   String? name;
+  String? audioTrackName;
   Map<String?, String?> httpHeaders;
 }
 

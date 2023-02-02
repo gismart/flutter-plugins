@@ -168,6 +168,7 @@ class CreateMessage {
     this.packageName,
     this.formatHint,
     this.name,
+    this.audioTrackName,
     required this.httpHeaders,
   });
 
@@ -176,6 +177,7 @@ class CreateMessage {
   String? packageName;
   String? formatHint;
   String? name;
+  String? audioTrackName;
   Map<String?, String?> httpHeaders;
 
   Object encode() {
@@ -185,6 +187,7 @@ class CreateMessage {
     pigeonMap['packageName'] = packageName;
     pigeonMap['formatHint'] = formatHint;
     pigeonMap['name'] = name;
+    pigeonMap['audioTrackName'] = audioTrackName;
     pigeonMap['httpHeaders'] = httpHeaders;
     return pigeonMap;
   }
@@ -197,6 +200,7 @@ class CreateMessage {
       packageName: pigeonMap['packageName'] as String?,
       formatHint: pigeonMap['formatHint'] as String?,
       name: pigeonMap['name'] as String?,
+      audioTrackName: pigeonMap['audioTrackName'] as String?,
       httpHeaders: (pigeonMap['httpHeaders'] as Map<Object?, Object?>?)!.cast<String?, String?>(),
     );
   }
@@ -204,19 +208,22 @@ class CreateMessage {
 
 class HlsStreamMessage {
   HlsStreamMessage({
-    this.uri,
+    required this.uri,
     this.name,
+    this.audioTrackName,
     required this.httpHeaders,
   });
 
-  String? uri;
+  String uri;
   String? name;
+  String? audioTrackName;
   Map<String?, String?> httpHeaders;
 
   Object encode() {
     final Map<Object?, Object?> pigeonMap = <Object?, Object?>{};
     pigeonMap['uri'] = uri;
     pigeonMap['name'] = name;
+    pigeonMap['audioTrackName'] = audioTrackName;
     pigeonMap['httpHeaders'] = httpHeaders;
     return pigeonMap;
   }
@@ -224,8 +231,9 @@ class HlsStreamMessage {
   static HlsStreamMessage decode(Object message) {
     final Map<Object?, Object?> pigeonMap = message as Map<Object?, Object?>;
     return HlsStreamMessage(
-      uri: pigeonMap['uri'] as String?,
+      uri: pigeonMap['uri']! as String,
       name: pigeonMap['name'] as String?,
+      audioTrackName: pigeonMap['audioTrackName'] as String?,
       httpHeaders: (pigeonMap['httpHeaders'] as Map<Object?, Object?>?)!.cast<String?, String?>(),
     );
   }

@@ -221,6 +221,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         dataSourceType = DataSourceType.asset,
         formatHint = null,
         name = null,
+        audioTrackName = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
 
@@ -237,6 +238,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     this.dataSource, {
     this.formatHint,
     this.name,
+    this.audioTrackName,
     Future<ClosedCaptionFile>? closedCaptionFile,
     this.videoPlayerOptions,
     this.httpHeaders = const <String, String>{},
@@ -255,6 +257,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         dataSourceType = DataSourceType.file,
         package = null,
         name = null,
+        audioTrackName = null,
         formatHint = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
@@ -272,6 +275,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         dataSourceType = DataSourceType.contentUri,
         package = null,
         name = null,
+        audioTrackName = null,
         formatHint = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
@@ -301,6 +305,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Only set for [network] HLS videos. User-friendly name of the stream to be shown in Settings.
   final String? name;
+
+  /// Only set for [network] HLS videos. The name of the initial audio track.
+  final String? audioTrackName;
 
   Future<ClosedCaptionFile>? _closedCaptionFileFuture;
   ClosedCaptionFile? _closedCaptionFile;
@@ -712,8 +719,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 /// Manager for HLS cache
 class VideoPlayerHlsManager {
   /// Starts background caching if source is an HLS stream with no active/finished caching job.
-  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
-    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(urlString, streamName);
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName, String audioTrackName) {
+    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(urlString, streamName, audioTrackName);
   }
 
   /// Checks whether the given HLS stream is available for offline playback.

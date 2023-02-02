@@ -50,6 +50,7 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
     String? uri;
     String? formatHint;
     String? name;
+    String? audioTrackName;
     Map<String, String> httpHeaders = <String, String>{};
     switch (dataSource.sourceType) {
       case DataSourceType.asset:
@@ -61,6 +62,7 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
         formatHint = _videoFormatStringMap[dataSource.formatHint];
         httpHeaders = dataSource.httpHeaders;
         name = dataSource.name;
+        audioTrackName = dataSource.audioTrackName;
         break;
       case DataSourceType.file:
         uri = dataSource.uri;
@@ -76,6 +78,7 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
       httpHeaders: httpHeaders,
       formatHint: formatHint,
       name: name,
+      audioTrackName: audioTrackName,
     );
   }
 
@@ -88,10 +91,11 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName, String audioTrackName) {
     final HlsStreamMessage message = HlsStreamMessage(
       uri: urlString,
       name: streamName,
+      audioTrackName: audioTrackName,
       httpHeaders: <String?, String?>{},
     );
     return _api.startHlsStreamCachingIfNeeded(message);
