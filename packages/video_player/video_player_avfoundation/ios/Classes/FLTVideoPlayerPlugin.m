@@ -646,7 +646,7 @@ NS_INLINE UIViewController *rootViewController() {
                 }
                 case AssetNotDownloaded: {
                     NSLog(@"HLS asset is not cached, starting download");
-                    [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
+                    [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name audioTrackName:input.audioTrackName];
                     localAsset = asset;
                     break;
                 }
@@ -706,7 +706,7 @@ NS_INLINE UIViewController *rootViewController() {
             
             AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
             if(assetDownloadState == AssetNotDownloaded) {
-                [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name];
+                [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name audioTrackName:input.audioTrackName];
             }
         }  else {
             NSLog(@"Asset manager not initialized (did you forget to restore state in AppDelegate?)");

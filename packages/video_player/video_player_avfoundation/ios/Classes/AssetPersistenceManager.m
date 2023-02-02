@@ -66,7 +66,7 @@ NSMutableDictionary *willDownloadToUrlMap;
 }
 
 /// Triggers the initial AVAssetDownloadTask for a given Asset.
-- (void)downloadStream:(Asset *)asset streamName:(NSString *)streamName {
+- (void)downloadStream:(Asset *)asset streamName:(NSString *)streamName audioTrackName:(NSString *)audioTrackName {
     // Get the default media selections for the asset's media selection groups.
     AVMediaSelection* preferredMediaSelection = asset.urlAsset.preferredMediaSelection;
     NSArray* preferredMediaSelections = [[NSArray alloc] initWithObjects:preferredMediaSelection, nil];
