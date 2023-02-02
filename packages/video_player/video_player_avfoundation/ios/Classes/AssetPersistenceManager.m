@@ -239,8 +239,6 @@ didCompleteWithError:(NSError *)error {
                 [willDownloadToUrlMap removeObjectForKey:task];
 
                 if(error != nil) {
-                    Asset* localAsset;
-                    NSURL* localFileLocation;
                     switch(error.code) {
                         case NSURLErrorUnknown: {
                             NSLog(@"Downloading HLS streams is not supported in the simulator.");
