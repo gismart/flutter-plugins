@@ -185,8 +185,8 @@ NSMutableDictionary *willDownloadToUrlMap;
                 return AssetDownloading;
             }
             
-            // Check if requested audio track is cached
             if(audioTrackName != nil) {
+                // Check if requested audio track is cached
                 AVMediaSelectionGroup *audioSelectionGroup = [urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
                 if(audioSelectionGroup != nil) {
                     NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
@@ -201,8 +201,8 @@ NSMutableDictionary *willDownloadToUrlMap;
                         }
                     }
                 }
+                [self deleteAsset:asset];
                 return AssetNotDownloaded;
-                // TODO ivan handle audio track abscense
             }
             return AssetDownloaded;
         }
@@ -343,7 +343,7 @@ aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloa
 - (void)URLSession:(NSURLSession *)session
 aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloadTask
 didCompleteForMediaSelection:(AVMediaSelection *)mediaSelection {
-    NSLog(@"HLS Asset: Completed downloading MediaSelection");
+    NSLog(@"HLS Asset: Completed downloading Audio Track");
     /*
      This delegate callback provides an AVMediaSelection object which is now fully available for
      offline use.
