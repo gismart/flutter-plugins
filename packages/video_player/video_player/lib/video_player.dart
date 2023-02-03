@@ -724,7 +724,7 @@ class VideoPlayerHlsManager {
   }
 
   /// Checks whether the given HLS stream is available for offline playback.
-  Future<bool> isHlsAvailableOffline(String urlString, String audioTrackName) {
+  Future<bool> isHlsAvailableOffline(String urlString, String? audioTrackName) {
     return _videoPlayerPlatform.isHlsAvailableOffline(urlString, audioTrackName);
   }
 }

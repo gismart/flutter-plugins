@@ -74,7 +74,7 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   }
 
   /// Checks whether the given HLS stream is available for offline playback.
-  Future<bool> isHlsAvailableOffline(String urlString, String audioTrackName) {
+  Future<bool> isHlsAvailableOffline(String urlString, String? audioTrackName) {
     throw UnimplementedError('isHlsAvailableOffline() has not been implemented.');
   }
 
