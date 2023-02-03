@@ -71,25 +71,27 @@ NSMutableDictionary *willDownloadToUrlMap;
     AVMediaSelection* preferredMediaSelection = asset.urlAsset.preferredMediaSelection;
     NSMutableArray *finalMediaSelections = [[NSMutableArray alloc] init];
 
-    if([asset.urlAsset statusOfValueForKey:@"availableMediaCharacteristicsWithMediaSelectionOptions" error:nil] == AVKeyValueStatusLoaded) {
-    }
-    
-    AVMediaSelectionGroup *audioSelectionGroup = [asset.urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
-    NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
-    NSMutableArray* audioTrackNames = [NSMutableArray array];
-    for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-        NSString* localAudioTrackName = audioTrack.locale.languageCode;
-        if(audioTrack.locale.languageCode == nil) {
-            localAudioTrackName = @"und"; // as defined in ISO 639-2
+    if(audioTrackName != nil) {
+        if([asset.urlAsset statusOfValueForKey:@"availableMediaCharacteristicsWithMediaSelectionOptions" error:nil] == AVKeyValueStatusLoaded) {
         }
         
-        if(audioTrackName == localAudioTrackName) {
-            AVMutableMediaSelection* mutableMediaSelection = [preferredMediaSelection mutableCopy];
-            [mutableMediaSelection selectMediaOption:audioTrack inMediaSelectionGroup:audioSelectionGroup];
-            [finalMediaSelections addObject:mutableMediaSelection];
+        AVMediaSelectionGroup *audioSelectionGroup = [asset.urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+        NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+        NSMutableArray* audioTrackNames = [NSMutableArray array];
+        for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+            NSString* localAudioTrackName = audioTrack.locale.languageCode;
+            if(audioTrack.locale.languageCode == nil) {
+                localAudioTrackName = @"und"; // as defined in ISO 639-2
+            }
+            
+            if(audioTrackName == localAudioTrackName) {
+                AVMutableMediaSelection* mutableMediaSelection = [preferredMediaSelection mutableCopy];
+                [mutableMediaSelection selectMediaOption:audioTrack inMediaSelectionGroup:audioSelectionGroup];
+                [finalMediaSelections addObject:mutableMediaSelection];
+            }
         }
     }
-    
+
     if([finalMediaSelections count] == 0) {
         [finalMediaSelections addObject:preferredMediaSelection];
     }
@@ -177,23 +179,26 @@ NSMutableDictionary *willDownloadToUrlMap;
         // Check if the file exists on disk
         NSFileManager* defaultFileManager = [NSFileManager defaultManager];
         if ([defaultFileManager fileExistsAtPath:localFileLocation.path]) {
-            AVURLAsset *urlAsset = [AVURLAsset assetWithURL:localFileLocation];
-            AVAssetCache *assetCache = urlAsset.assetCache;
-            AVMediaSelectionGroup *audioSelectionGroup = [urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
-            NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
-            // Check if requested audio track is cached
-            for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-                NSString* localAudioTrackName = audioTrack.locale.languageCode;
-                if(audioTrack.locale.languageCode == nil) {
-                    localAudioTrackName = @"und"; // as defined in ISO 639-2
-                }
-                
-                if(audioTrackName == localAudioTrackName) {
-                    return AssetDownloaded;
-                } else {
-                    // TODO ivan handle audio track abscense
+            if(audioTrackName != nil) {
+                AVURLAsset *urlAsset = [AVURLAsset assetWithURL:localFileLocation];
+                AVAssetCache *assetCache = urlAsset.assetCache;
+                AVMediaSelectionGroup *audioSelectionGroup = [urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+                NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
+                // Check if requested audio track is cached
+                for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+                    NSString* localAudioTrackName = audioTrack.locale.languageCode;
+                    if(audioTrack.locale.languageCode == nil) {
+                        localAudioTrackName = @"und"; // as defined in ISO 639-2
+                    }
+                    
+                    if(audioTrackName == localAudioTrackName) {
+                        return AssetDownloaded;
+                    } else {
+                        // TODO ivan handle audio track abscense
+                    }
                 }
             }
+            return AssetDownloaded;
         }
     }
 
