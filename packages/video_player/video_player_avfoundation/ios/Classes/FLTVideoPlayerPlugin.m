@@ -257,6 +257,8 @@ NS_INLINE UIViewController *rootViewController() {
       }
     }
   };
+    
+  [self setInitialAudioTrack:item audioTrackName:audioTrackName];
 
   _player = [AVPlayer playerWithPlayerItem:item];
   _player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
@@ -276,6 +278,30 @@ NS_INLINE UIViewController *rootViewController() {
   [asset loadValuesAsynchronouslyForKeys:@[ @"tracks" ] completionHandler:assetCompletionHandler];
 
   return self;
+}
+
+- (void)setInitialAudioTrack:(AVPlayerItem *)item audioTrackName:(NSString *)audioTrackName {
+  AVMediaSelectionGroup *audioSelectionGroup = [[item asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+  if(audioSelectionGroup != nil) {
+    NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+    if([audioSelectionGroupOptions count] > 0) {
+      // Select the first audio track as a default fallback option
+      [item selectMediaOption:audioSelectionGroupOptions[0] inMediaSelectionGroup: audioSelectionGroup];
+      if(audioTrackName != nil) {
+        for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+          NSString* localAudioTrackName = audioTrack.locale.languageCode;
+          if(audioTrack.locale.languageCode == nil) {
+            localAudioTrackName = @"und"; // as defined in ISO 639-2
+          }
+
+          if([audioTrackName isEqualToString:localAudioTrackName]) {
+            [item selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
+            break;
+          }
+        }
+      }
+    }
+  }
 }
 
 - (void)observeValueForKeyPath:(NSString *)path
@@ -778,7 +804,7 @@ NS_INLINE UIViewController *rootViewController() {
   AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
   NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
   for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-    if([audioTrack.locale.languageCode isEqual:requestedAudioTrackName]) {
+    if([audioTrack.locale.languageCode isEqualToString:requestedAudioTrackName]) {
       [[player.player currentItem] selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
       break;
     }
