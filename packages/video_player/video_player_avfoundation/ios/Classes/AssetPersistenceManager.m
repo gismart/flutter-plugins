@@ -72,22 +72,22 @@ NSMutableDictionary *willDownloadToUrlMap;
     NSMutableArray *finalMediaSelections = [[NSMutableArray alloc] init];
 
     if(audioTrackName != nil) {
-        if([asset.urlAsset statusOfValueForKey:@"availableMediaCharacteristicsWithMediaSelectionOptions" error:nil] == AVKeyValueStatusLoaded) {
-        }
-        
         AVMediaSelectionGroup *audioSelectionGroup = [asset.urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
-        NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
-        NSMutableArray* audioTrackNames = [NSMutableArray array];
-        for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-            NSString* localAudioTrackName = audioTrack.locale.languageCode;
-            if(audioTrack.locale.languageCode == nil) {
-                localAudioTrackName = @"und"; // as defined in ISO 639-2
-            }
-            
-            if([audioTrackName isEqualToString:localAudioTrackName]) {
-                AVMutableMediaSelection* mutableMediaSelection = [preferredMediaSelection mutableCopy];
-                [mutableMediaSelection selectMediaOption:audioTrack inMediaSelectionGroup:audioSelectionGroup];
-                [finalMediaSelections addObject:mutableMediaSelection];
+        if(audioSelectionGroup != nil) {
+            NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+            NSMutableArray* audioTrackNames = [NSMutableArray array];
+            for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+                NSString* localAudioTrackName = audioTrack.locale.languageCode;
+                if(audioTrack.locale.languageCode == nil) {
+                    localAudioTrackName = @"und"; // as defined in ISO 639-2
+                }
+         
+                if([audioTrackName isEqualToString:localAudioTrackName]) {
+                    AVMutableMediaSelection* mutableMediaSelection = [preferredMediaSelection mutableCopy];
+                    [mutableMediaSelection selectMediaOption:audioTrack inMediaSelectionGroup:audioSelectionGroup];
+                    [finalMediaSelections addObject:mutableMediaSelection];
+                    break;
+                }
             }
         }
     }
@@ -188,18 +188,21 @@ NSMutableDictionary *willDownloadToUrlMap;
             // Check if requested audio track is cached
             if(audioTrackName != nil) {
                 AVMediaSelectionGroup *audioSelectionGroup = [urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
-                NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
-                for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-                    NSString* localAudioTrackName = audioTrack.locale.languageCode;
-                    if(audioTrack.locale.languageCode == nil) {
-                        localAudioTrackName = @"und"; // as defined in ISO 639-2
-                    }
-                    
-                    if([audioTrackName isEqualToString:localAudioTrackName]) {
-                        return AssetDownloaded;
+                if(audioSelectionGroup != nil) {
+                    NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
+                    for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+                        NSString* localAudioTrackName = audioTrack.locale.languageCode;
+                        if(audioTrack.locale.languageCode == nil) {
+                            localAudioTrackName = @"und"; // as defined in ISO 639-2
+                        }
+                        
+                        if([audioTrackName isEqualToString:localAudioTrackName]) {
+                            return AssetDownloaded;
+                        }
                     }
                 }
                 return AssetNotDownloaded;
+                // TODO ivan handle audio track abscense
             }
             return AssetDownloaded;
         }
