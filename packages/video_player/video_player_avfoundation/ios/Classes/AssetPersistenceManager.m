@@ -69,7 +69,30 @@ NSMutableDictionary *willDownloadToUrlMap;
 - (void)downloadStream:(Asset *)asset streamName:(NSString *)streamName audioTrackName:(NSString *)audioTrackName {
     // Get the default media selections for the asset's media selection groups.
     AVMediaSelection* preferredMediaSelection = asset.urlAsset.preferredMediaSelection;
-    NSArray* preferredMediaSelections = [[NSArray alloc] initWithObjects:preferredMediaSelection, nil];
+    NSMutableArray *finalMediaSelections = [[NSMutableArray alloc] init];
+
+    if([asset.urlAsset statusOfValueForKey:@"availableMediaCharacteristicsWithMediaSelectionOptions" error:nil] == AVKeyValueStatusLoaded) {
+    }
+    
+    AVMediaSelectionGroup *audioSelectionGroup = [asset.urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+    NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+    NSMutableArray* audioTrackNames = [NSMutableArray array];
+    for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+        NSString* localAudioTrackName = audioTrack.locale.languageCode;
+        if(audioTrack.locale.languageCode == nil) {
+            localAudioTrackName = @"und"; // as defined in ISO 639-2
+        }
+        
+        if(audioTrackName == localAudioTrackName) {
+            AVMutableMediaSelection* mutableMediaSelection = [preferredMediaSelection mutableCopy];
+            [mutableMediaSelection selectMediaOption:audioTrack inMediaSelectionGroup:audioSelectionGroup];
+            [finalMediaSelections addObject:mutableMediaSelection];
+        }
+    }
+    
+    if([finalMediaSelections count] == 0) {
+        [finalMediaSelections addObject:preferredMediaSelection];
+    }
 
     /*
      Creates and initializes an AVAggregateAssetDownloadTask to download multiple AVMediaSelections
@@ -77,7 +100,7 @@ NSMutableDictionary *willDownloadToUrlMap;
      */
     @try {
         AVAggregateAssetDownloadTask* task = [assetDownloadURLSession aggregateAssetDownloadTaskWithURLAsset: asset.urlAsset
-                                                                                             mediaSelections: preferredMediaSelections
+                                                                                             mediaSelections: finalMediaSelections
                                                                                                   assetTitle: streamName
                                                                                             assetArtworkData: nil
                                                                                                      options: nil];
