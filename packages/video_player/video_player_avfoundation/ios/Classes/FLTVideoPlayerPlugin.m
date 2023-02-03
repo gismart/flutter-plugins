@@ -731,7 +731,7 @@ NS_INLINE UIViewController *rootViewController() {
 
 - (void)startHlsStreamCachingIfNeeded:(FLTHlsStreamMessage *)input error:(FlutterError **)error {
     NSURL* remoteUrl = [NSURL URLWithString:input.uri];
-    if([self isHlsStream:remoteUrl]) {
+    if(remoteUrl != nil && [self isHlsStream:remoteUrl]) {
         if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager) {
             AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
             
@@ -749,7 +749,7 @@ NS_INLINE UIViewController *rootViewController() {
 
 - (FLTIsHlsAvailableOfflineMessage *)isHlsAvailableOffline:(FLTHlsStreamMessage *)input error:(FlutterError **)error {
     NSURL* remoteUrl = [NSURL URLWithString:input.uri];
-    if([self isHlsStream:remoteUrl]) {
+    if(remoteUrl != nil && [self isHlsStream:remoteUrl]) {
         if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager) {
             AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
             Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
@@ -780,17 +780,19 @@ NS_INLINE UIViewController *rootViewController() {
 
 - (FLTAudioTrackMessage*)getAvailableAudioTracksList:(FLTTextureMessage *)input error:(FlutterError **)error {
   FLTVideoPlayer* player = self.playersByTextureId[input.textureId];
-  AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
-
-  NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
   NSMutableArray* audioTrackNames = [NSMutableArray array];
-
-  for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-    NSString* audioTrackLanguageTag = audioTrack.locale.languageCode;
-    if (audioTrackLanguageTag != nil) {
-      [audioTrackNames addObject: audioTrackLanguageTag];
-    } else {
-      [audioTrackNames addObject: @"und"]; // as defined in ISO 639-2
+  AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+  if(audioSelectionGroup != nil) {
+    NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+    if([audioSelectionGroupOptions count] > 0){
+      for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+        NSString* audioTrackLanguageTag = audioTrack.locale.languageCode;
+        if (audioTrackLanguageTag != nil) {
+          [audioTrackNames addObject: audioTrackLanguageTag];
+        } else {
+          [audioTrackNames addObject: @"und"]; // as defined in ISO 639-2
+        }
+      }
     }
   }
 
@@ -799,32 +801,34 @@ NS_INLINE UIViewController *rootViewController() {
 
 - (void)setActiveAudioTrack:(nonnull FLTAudioTrackMessage *)input error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   FLTVideoPlayer* player = self.playersByTextureId[input.textureId];
-  NSString* requestedAudioTrackName = input.audioTrackNames.firstObject;
-
-  AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
-  NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
-  for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-    if([audioTrack.locale.languageCode isEqualToString:requestedAudioTrackName]) {
-      [[player.player currentItem] selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
-      break;
+  if(input.audioTrackNames != nil && [input.audioTrackNames count] > 0) {
+    NSString* requestedAudioTrackName = input.audioTrackNames.firstObject;
+    AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+    if(audioSelectionGroup != nil) {
+      NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+      if([audioSelectionGroupOptions count] > 0) {
+        for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+          if([audioTrack.locale.languageCode isEqualToString:requestedAudioTrackName]) {
+            [[player.player currentItem] selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
+            break;
+          }
+        }
+      }
     }
   }
 }
 
 - (void)setActiveAudioTrackByIndex:(nonnull FLTAudioTrackMessage *)input error:(FlutterError * _Nullable __autoreleasing * _Nonnull)error {
   FLTVideoPlayer* player = self.playersByTextureId[input.textureId];
-  int index = [input.index intValue];
-  int i = 0;
-
-  AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
-  NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
-
-  for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
-    if(index == i) {
-      [[player.player currentItem] selectMediaOption:audioTrack inMediaSelectionGroup: audioSelectionGroup];
-      break;
+  if(input.index != nil) {
+    int index = [input.index intValue];
+    AVMediaSelectionGroup *audioSelectionGroup = [[[player.player currentItem] asset] mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+    if(audioSelectionGroup != nil) {
+      NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+      if([audioSelectionGroupOptions count] > 0) {
+        [[player.player currentItem] selectMediaOption:audioSelectionGroupOptions[index] inMediaSelectionGroup: audioSelectionGroup];
+      }
     }
-    i += 1;
   }
 }
 
