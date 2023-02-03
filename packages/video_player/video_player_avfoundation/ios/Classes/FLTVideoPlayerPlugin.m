@@ -54,9 +54,11 @@
 @property(nonatomic, readonly) BOOL isInitialized;
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
-                httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers;
+                httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers
+             audioTrackName:(NSString *)audioTrackName;
 - (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset
-                    frameUpdater:(FLTFrameUpdater *)frameUpdater;
+                    frameUpdater:(FLTFrameUpdater *)frameUpdater
+                  audioTrackName:(NSString *)audioTrackName;
 @end
 
 static void *timeRangeContext = &timeRangeContext;
@@ -69,9 +71,9 @@ static void *playbackBufferFullContext = &playbackBufferFullContext;
 static void *rateContext = &rateContext;
 
 @implementation FLTVideoPlayer
-- (instancetype)initWithAsset:(NSString *)asset frameUpdater:(FLTFrameUpdater *)frameUpdater {
+- (instancetype)initWithAsset:(NSString *)asset frameUpdater:(FLTFrameUpdater *)frameUpdater audioTrackName:(NSString *)audioTrackName {
   NSString *path = [[NSBundle mainBundle] pathForResource:asset ofType:nil];
-  return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater httpHeaders:@{}];
+  return [self initWithURL:[NSURL fileURLWithPath:path] frameUpdater:frameUpdater httpHeaders:@{} audioTrackName:audioTrackName];
 }
 
 - (void)addObservers:(AVPlayerItem *)item {
@@ -204,23 +206,26 @@ NS_INLINE UIViewController *rootViewController() {
 
 - (instancetype)initWithURL:(NSURL *)url
                frameUpdater:(FLTFrameUpdater *)frameUpdater
-                httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers {
+                httpHeaders:(nonnull NSDictionary<NSString *, NSString *> *)headers
+             audioTrackName:(NSString *)audioTrackName {
   NSDictionary<NSString *, id> *options = nil;
   if ([headers count] != 0) {
     options = @{@"AVURLAssetHTTPHeaderFieldsKey" : headers};
   }
   AVURLAsset *urlAsset = [AVURLAsset URLAssetWithURL:url options:options];
-  return [self initWithURLAsset:urlAsset frameUpdater:frameUpdater];
+  return [self initWithURLAsset:urlAsset frameUpdater:frameUpdater audioTrackName:audioTrackName];
 }
 
 - (instancetype)initWithURLAsset:(AVURLAsset *)urlAsset
-              frameUpdater:(FLTFrameUpdater *)frameUpdater {
+                    frameUpdater:(FLTFrameUpdater *)frameUpdater
+                  audioTrackName:(NSString *)audioTrackName{
   AVPlayerItem *item = [AVPlayerItem playerItemWithAsset:urlAsset];
-  return [self initWithPlayerItem:item frameUpdater:frameUpdater];
+  return [self initWithPlayerItem:item frameUpdater:frameUpdater audioTrackName:audioTrackName];
 }
 
 - (instancetype)initWithPlayerItem:(AVPlayerItem *)item
-                      frameUpdater:(FLTFrameUpdater *)frameUpdater {
+                      frameUpdater:(FLTFrameUpdater *)frameUpdater
+                    audioTrackName:(NSString *)audioTrackName{
   self = [super init];
   NSAssert(self, @"super init cannot be nil");
 
@@ -599,12 +604,13 @@ NS_INLINE UIViewController *rootViewController() {
     } else {
       assetPath = [_registrar lookupKeyForAsset:input.asset];
     }
-    player = [[FLTVideoPlayer alloc] initWithAsset:assetPath frameUpdater:frameUpdater];
+    player = [[FLTVideoPlayer alloc] initWithAsset:assetPath frameUpdater:frameUpdater audioTrackName:input.audioTrackName];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else if (input.uri) {
     player = [[FLTVideoPlayer alloc] initWithURL:[NSURL URLWithString:input.uri]
                                     frameUpdater:frameUpdater
-                                     httpHeaders:input.httpHeaders];
+                                     httpHeaders:input.httpHeaders
+                                  audioTrackName:input.audioTrackName];
     return [self onPlayerSetup:player frameUpdater:frameUpdater];
   } else {
     *error = [FlutterError errorWithCode:@"video_player" message:@"not implemented" details:nil];
@@ -657,7 +663,8 @@ NS_INLINE UIViewController *rootViewController() {
         }
              
         player = [[FLTVideoPlayer alloc] initWithURLAsset:localAsset.urlAsset
-                                             frameUpdater:frameUpdater];
+                                             frameUpdater:frameUpdater
+                                           audioTrackName:input.audioTrackName];
         return [self onPlayerSetup:player frameUpdater:frameUpdater];
     } else {
         return [self create:input error:error];

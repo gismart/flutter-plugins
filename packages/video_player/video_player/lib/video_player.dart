@@ -215,13 +215,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// package and null otherwise.
   VideoPlayerController.asset(this.dataSource,
       {this.package,
+      this.audioTrackName,
       Future<ClosedCaptionFile>? closedCaptionFile,
       this.videoPlayerOptions})
       : _closedCaptionFileFuture = closedCaptionFile,
         dataSourceType = DataSourceType.asset,
         formatHint = null,
         name = null,
-        audioTrackName = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
 
@@ -251,13 +251,12 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   ///
   /// This will load the file from a file:// URI constructed from [file]'s path.
   VideoPlayerController.file(File file,
-      {Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
+      {this.audioTrackName, Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
       : _closedCaptionFileFuture = closedCaptionFile,
         dataSource = Uri.file(file.absolute.path).toString(),
         dataSourceType = DataSourceType.file,
         package = null,
         name = null,
-        audioTrackName = null,
         formatHint = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
@@ -267,7 +266,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// This will load the video from the input content-URI.
   /// This is supported on Android only.
   VideoPlayerController.contentUri(Uri contentUri,
-      {Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
+      {this.audioTrackName, Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
       : assert(defaultTargetPlatform == TargetPlatform.android,
             'VideoPlayerController.contentUri is only supported on Android.'),
         _closedCaptionFileFuture = closedCaptionFile,
@@ -275,7 +274,6 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         dataSourceType = DataSourceType.contentUri,
         package = null,
         name = null,
-        audioTrackName = null,
         formatHint = null,
         httpHeaders = const <String, String>{},
         super(VideoPlayerValue(duration: Duration.zero));
@@ -306,7 +304,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// Only set for [network] HLS videos. User-friendly name of the stream to be shown in Settings.
   final String? name;
 
-  /// Only set for [network] HLS videos. The name of the initial audio track.
+  /// The name of the initial audio track.
   final String? audioTrackName;
 
   Future<ClosedCaptionFile>? _closedCaptionFileFuture;
@@ -479,11 +477,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         return DataSource(
           sourceType: DataSourceType.file,
           uri: dataSource,
+          audioTrackName: audioTrackName,
         );
       case DataSourceType.contentUri:
         return DataSource(
           sourceType: DataSourceType.contentUri,
           uri: dataSource,
+          audioTrackName: audioTrackName,
         );
     }
   }
