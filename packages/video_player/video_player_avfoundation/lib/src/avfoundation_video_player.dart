@@ -102,9 +102,10 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<bool> isHlsAvailableOffline(String urlString) async {
+  Future<bool> isHlsAvailableOffline(String urlString, String audioTrackName) async {
     final HlsStreamMessage message = HlsStreamMessage(
       uri: urlString,
+      audioTrackName: audioTrackName,
       httpHeaders: <String?, String?>{},
     );
     return _api
