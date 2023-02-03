@@ -473,6 +473,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           formatHint: formatHint,
           httpHeaders: httpHeaders,
           name: name,
+          audioTrackName: audioTrackName,
         );
       case DataSourceType.file:
         return DataSource(
