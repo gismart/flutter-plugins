@@ -179,12 +179,16 @@ NSMutableDictionary *willDownloadToUrlMap;
         // Check if the file exists on disk
         NSFileManager* defaultFileManager = [NSFileManager defaultManager];
         if ([defaultFileManager fileExistsAtPath:localFileLocation.path]) {
+            AVURLAsset *urlAsset = [AVURLAsset assetWithURL:localFileLocation];
+            AVAssetCache *assetCache = urlAsset.assetCache;
+            if(!assetCache.isPlayableOffline) {
+                return AssetDownloading;
+            }
+            
+            // Check if requested audio track is cached
             if(audioTrackName != nil) {
-                AVURLAsset *urlAsset = [AVURLAsset assetWithURL:localFileLocation];
-                AVAssetCache *assetCache = urlAsset.assetCache;
                 AVMediaSelectionGroup *audioSelectionGroup = [urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
                 NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
-                // Check if requested audio track is cached
                 for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
                     NSString* localAudioTrackName = audioTrack.locale.languageCode;
                     if(audioTrack.locale.languageCode == nil) {
@@ -193,10 +197,9 @@ NSMutableDictionary *willDownloadToUrlMap;
                     
                     if(audioTrackName == localAudioTrackName) {
                         return AssetDownloaded;
-                    } else {
-                        // TODO ivan handle audio track abscense
                     }
                 }
+                return AssetNotDownloaded;
             }
             return AssetDownloaded;
         }
