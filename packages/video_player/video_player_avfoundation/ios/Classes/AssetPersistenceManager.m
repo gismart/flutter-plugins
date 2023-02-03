@@ -168,7 +168,7 @@ NSMutableDictionary *willDownloadToUrlMap;
 }
 
 /// Returns the current download state for a given Asset.
-- (AssetDownloadState)downloadState:(Asset *)asset {
+- (AssetDownloadState)downloadState:(Asset *)asset audioTrackName:(NSString *)audioTrackName{
     // Check if there is a file URL stored for this asset.
     Asset* localAsset = [self localAssetForStream:asset.uniqueId];
     if (localAsset != nil) {
@@ -177,7 +177,23 @@ NSMutableDictionary *willDownloadToUrlMap;
         // Check if the file exists on disk
         NSFileManager* defaultFileManager = [NSFileManager defaultManager];
         if ([defaultFileManager fileExistsAtPath:localFileLocation.path]) {
-            return AssetDownloaded;
+            AVURLAsset *urlAsset = [AVURLAsset assetWithURL:localFileLocation];
+            AVAssetCache *assetCache = urlAsset.assetCache;
+            AVMediaSelectionGroup *audioSelectionGroup = [urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+            NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
+            // Check if requested audio track is cached
+            for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+                NSString* localAudioTrackName = audioTrack.locale.languageCode;
+                if(audioTrack.locale.languageCode == nil) {
+                    localAudioTrackName = @"und"; // as defined in ISO 639-2
+                }
+                
+                if(audioTrackName == localAudioTrackName) {
+                    return AssetDownloaded;
+                } else {
+                    // TODO ivan handle audio track abscense
+                }
+            }
         }
     }
 

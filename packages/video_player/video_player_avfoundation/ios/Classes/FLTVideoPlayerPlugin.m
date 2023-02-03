@@ -628,7 +628,7 @@ NS_INLINE UIViewController *rootViewController() {
         Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
         
         if (AssetPersistenceManager.sharedManager.didRestorePersistenceManager) {
-            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset audioTrackName:input.audioTrackName];
             switch(assetDownloadState) {
                 case AssetDownloaded: {
                     NSLog(@"HLS asset is in cache");
@@ -704,7 +704,7 @@ NS_INLINE UIViewController *rootViewController() {
             
             Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
             
-            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset audioTrackName:input.audioTrackName];
             if(assetDownloadState == AssetNotDownloaded) {
                 [AssetPersistenceManager.sharedManager downloadStream:asset streamName:input.name audioTrackName:input.audioTrackName];
             }
@@ -721,7 +721,7 @@ NS_INLINE UIViewController *rootViewController() {
             AVURLAsset* remoteUrlAsset = [self createAVURLAssetWithHttpHeaders:input.httpHeaders remoteUrl:remoteUrl];
             Asset* asset = [[Asset alloc] initWithURLAsset:remoteUrlAsset];
             
-            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset];
+            AssetDownloadState assetDownloadState = [AssetPersistenceManager.sharedManager downloadState:asset audioTrackName:input.audioTrackName];
             if (assetDownloadState == AssetDownloaded) {
                 return [FLTIsHlsAvailableOfflineMessage makeWithIsAvailableOffline:@true];
             }
