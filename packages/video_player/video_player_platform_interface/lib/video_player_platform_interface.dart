@@ -69,12 +69,12 @@ abstract class VideoPlayerPlatform extends PlatformInterface {
   }
 
   /// Starts background caching if source is an HLS stream with no active/finished caching job.
-  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName, String audioTrackName) {
     throw UnimplementedError('startHlsStreamCachingIfNeeded() has not been implemented.');
   }
 
   /// Checks whether the given HLS stream is available for offline playback.
-  Future<bool> isHlsAvailableOffline(String urlString) {
+  Future<bool> isHlsAvailableOffline(String urlString, String? audioTrackName) {
     throw UnimplementedError('isHlsAvailableOffline() has not been implemented.');
   }
 
@@ -159,6 +159,7 @@ class DataSource {
     this.asset,
     this.package,
     this.name,
+    this.audioTrackName,
     this.httpHeaders = const <String, String>{},
   });
 
@@ -192,6 +193,9 @@ class DataSource {
 
   /// User-friendly name of the asset (only used for HLS streams).
   final String? name;
+
+  /// The name of the initial audio track (only used for HLS streams).
+  final String? audioTrackName;
 }
 
 /// The way in which the video was originally loaded.

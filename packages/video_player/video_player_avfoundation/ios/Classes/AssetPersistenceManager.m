@@ -66,10 +66,35 @@ NSMutableDictionary *willDownloadToUrlMap;
 }
 
 /// Triggers the initial AVAssetDownloadTask for a given Asset.
-- (void)downloadStream:(Asset *)asset streamName:(NSString *)streamName {
+- (void)downloadStream:(Asset *)asset streamName:(NSString *)streamName audioTrackName:(NSString *)audioTrackName {
     // Get the default media selections for the asset's media selection groups.
     AVMediaSelection* preferredMediaSelection = asset.urlAsset.preferredMediaSelection;
-    NSArray* preferredMediaSelections = [[NSArray alloc] initWithObjects:preferredMediaSelection, nil];
+    NSMutableArray *finalMediaSelections = [[NSMutableArray alloc] init];
+
+    if(audioTrackName != nil) {
+        AVMediaSelectionGroup *audioSelectionGroup = [asset.urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+        if(audioSelectionGroup != nil) {
+            NSArray* audioSelectionGroupOptions = audioSelectionGroup.options;
+            NSMutableArray* audioTrackNames = [NSMutableArray array];
+            for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+                NSString* localAudioTrackName = audioTrack.locale.languageCode;
+                if(audioTrack.locale.languageCode == nil) {
+                    localAudioTrackName = @"und"; // as defined in ISO 639-2
+                }
+         
+                if([audioTrackName isEqualToString:localAudioTrackName]) {
+                    AVMutableMediaSelection* mutableMediaSelection = [preferredMediaSelection mutableCopy];
+                    [mutableMediaSelection selectMediaOption:audioTrack inMediaSelectionGroup:audioSelectionGroup];
+                    [finalMediaSelections addObject:mutableMediaSelection];
+                    break;
+                }
+            }
+        }
+    }
+
+    if([finalMediaSelections count] == 0) {
+        [finalMediaSelections addObject:preferredMediaSelection];
+    }
 
     /*
      Creates and initializes an AVAggregateAssetDownloadTask to download multiple AVMediaSelections
@@ -77,7 +102,7 @@ NSMutableDictionary *willDownloadToUrlMap;
      */
     @try {
         AVAggregateAssetDownloadTask* task = [assetDownloadURLSession aggregateAssetDownloadTaskWithURLAsset: asset.urlAsset
-                                                                                             mediaSelections: preferredMediaSelections
+                                                                                             mediaSelections: finalMediaSelections
                                                                                                   assetTitle: streamName
                                                                                             assetArtworkData: nil
                                                                                                      options: nil];
@@ -145,7 +170,7 @@ NSMutableDictionary *willDownloadToUrlMap;
 }
 
 /// Returns the current download state for a given Asset.
-- (AssetDownloadState)downloadState:(Asset *)asset {
+- (AssetDownloadState)downloadState:(Asset *)asset audioTrackName:(NSString *)audioTrackName{
     // Check if there is a file URL stored for this asset.
     Asset* localAsset = [self localAssetForStream:asset.uniqueId];
     if (localAsset != nil) {
@@ -154,6 +179,31 @@ NSMutableDictionary *willDownloadToUrlMap;
         // Check if the file exists on disk
         NSFileManager* defaultFileManager = [NSFileManager defaultManager];
         if ([defaultFileManager fileExistsAtPath:localFileLocation.path]) {
+            AVURLAsset *urlAsset = [AVURLAsset assetWithURL:localFileLocation];
+            AVAssetCache *assetCache = urlAsset.assetCache;
+            if(!assetCache.isPlayableOffline) {
+                return AssetDownloading;
+            }
+            
+            if(audioTrackName != nil) {
+                // Check if requested audio track is cached
+                AVMediaSelectionGroup *audioSelectionGroup = [urlAsset mediaSelectionGroupForMediaCharacteristic: AVMediaCharacteristicAudible];
+                if(audioSelectionGroup != nil) {
+                    NSArray *audioSelectionGroupOptions = [assetCache mediaSelectionOptionsInMediaSelectionGroup:audioSelectionGroup];
+                    for(AVMediaSelectionOption* audioTrack in audioSelectionGroupOptions) {
+                        NSString* localAudioTrackName = audioTrack.locale.languageCode;
+                        if(audioTrack.locale.languageCode == nil) {
+                            localAudioTrackName = @"und"; // as defined in ISO 639-2
+                        }
+                        
+                        if([audioTrackName isEqualToString:localAudioTrackName]) {
+                            return AssetDownloaded;
+                        }
+                    }
+                }
+                [self deleteAsset:asset];
+                return AssetNotDownloaded;
+            }
             return AssetDownloaded;
         }
     }
@@ -239,8 +289,6 @@ didCompleteWithError:(NSError *)error {
                 [willDownloadToUrlMap removeObjectForKey:task];
 
                 if(error != nil) {
-                    Asset* localAsset;
-                    NSURL* localFileLocation;
                     switch(error.code) {
                         case NSURLErrorUnknown: {
                             NSLog(@"Downloading HLS streams is not supported in the simulator.");
@@ -295,7 +343,7 @@ aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloa
 - (void)URLSession:(NSURLSession *)session
 aggregateAssetDownloadTask:(AVAggregateAssetDownloadTask *)aggregateAssetDownloadTask
 didCompleteForMediaSelection:(AVMediaSelection *)mediaSelection {
-    NSLog(@"HLS Asset: Completed downloading MediaSelection");
+    NSLog(@"HLS Asset: Completed downloading Audio Track");
     /*
      This delegate callback provides an AVMediaSelection object which is now fully available for
      offline use.

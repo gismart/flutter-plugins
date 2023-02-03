@@ -215,6 +215,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// package and null otherwise.
   VideoPlayerController.asset(this.dataSource,
       {this.package,
+      this.audioTrackName,
       Future<ClosedCaptionFile>? closedCaptionFile,
       this.videoPlayerOptions})
       : _closedCaptionFileFuture = closedCaptionFile,
@@ -237,6 +238,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     this.dataSource, {
     this.formatHint,
     this.name,
+    this.audioTrackName,
     Future<ClosedCaptionFile>? closedCaptionFile,
     this.videoPlayerOptions,
     this.httpHeaders = const <String, String>{},
@@ -249,7 +251,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   ///
   /// This will load the file from a file:// URI constructed from [file]'s path.
   VideoPlayerController.file(File file,
-      {Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
+      {this.audioTrackName, Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
       : _closedCaptionFileFuture = closedCaptionFile,
         dataSource = Uri.file(file.absolute.path).toString(),
         dataSourceType = DataSourceType.file,
@@ -264,7 +266,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
   /// This will load the video from the input content-URI.
   /// This is supported on Android only.
   VideoPlayerController.contentUri(Uri contentUri,
-      {Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
+      {this.audioTrackName, Future<ClosedCaptionFile>? closedCaptionFile, this.videoPlayerOptions})
       : assert(defaultTargetPlatform == TargetPlatform.android,
             'VideoPlayerController.contentUri is only supported on Android.'),
         _closedCaptionFileFuture = closedCaptionFile,
@@ -301,6 +303,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 
   /// Only set for [network] HLS videos. User-friendly name of the stream to be shown in Settings.
   final String? name;
+
+  /// The name of the initial audio track.
+  final String? audioTrackName;
 
   Future<ClosedCaptionFile>? _closedCaptionFileFuture;
   ClosedCaptionFile? _closedCaptionFile;
@@ -466,16 +471,19 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           formatHint: formatHint,
           httpHeaders: httpHeaders,
           name: name,
+          audioTrackName: audioTrackName,
         );
       case DataSourceType.file:
         return DataSource(
           sourceType: DataSourceType.file,
           uri: dataSource,
+          audioTrackName: audioTrackName,
         );
       case DataSourceType.contentUri:
         return DataSource(
           sourceType: DataSourceType.contentUri,
           uri: dataSource,
+          audioTrackName: audioTrackName,
         );
     }
   }
@@ -712,13 +720,13 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
 /// Manager for HLS cache
 class VideoPlayerHlsManager {
   /// Starts background caching if source is an HLS stream with no active/finished caching job.
-  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
-    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(urlString, streamName);
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName, String audioTrackName) {
+    return _videoPlayerPlatform.startHlsStreamCachingIfNeeded(urlString, streamName, audioTrackName);
   }
 
   /// Checks whether the given HLS stream is available for offline playback.
-  Future<bool> isHlsAvailableOffline(String urlString) {
-    return _videoPlayerPlatform.isHlsAvailableOffline(urlString);
+  Future<bool> isHlsAvailableOffline(String urlString, String? audioTrackName) {
+    return _videoPlayerPlatform.isHlsAvailableOffline(urlString, audioTrackName);
   }
 }
 

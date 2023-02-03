@@ -84,23 +84,27 @@ NS_ASSUME_NONNULL_BEGIN
     packageName:(nullable NSString *)packageName
     formatHint:(nullable NSString *)formatHint
     name:(nullable NSString *)name
+    audioTrackName:(nullable NSString *)audioTrackName
     httpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders;
 @property(nonatomic, copy, nullable) NSString * asset;
 @property(nonatomic, copy, nullable) NSString * uri;
 @property(nonatomic, copy, nullable) NSString * packageName;
 @property(nonatomic, copy, nullable) NSString * formatHint;
 @property(nonatomic, copy, nullable) NSString * name;
+@property(nonatomic, copy, nullable) NSString * audioTrackName;
 @property(nonatomic, strong) NSDictionary<NSString *, NSString *> * httpHeaders;
 @end
 
 @interface FLTHlsStreamMessage : NSObject
 /// `init` unavailable to enforce nonnull fields, see the `make` class method.
 - (instancetype)init NS_UNAVAILABLE;
-+ (instancetype)makeWithUri:(nullable NSString *)uri
++ (instancetype)makeWithUri:(NSString *)uri
     name:(nullable NSString *)name
+    audioTrackName:(nullable NSString *)audioTrackName
     httpHeaders:(NSDictionary<NSString *, NSString *> *)httpHeaders;
-@property(nonatomic, copy, nullable) NSString * uri;
+@property(nonatomic, copy) NSString * uri;
 @property(nonatomic, copy, nullable) NSString * name;
+@property(nonatomic, copy, nullable) NSString * audioTrackName;
 @property(nonatomic, strong) NSDictionary<NSString *, NSString *> * httpHeaders;
 @end
 

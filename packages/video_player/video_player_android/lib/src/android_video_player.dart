@@ -81,13 +81,13 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
   }
 
   @override
-  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName) {
+  Future<void> startHlsStreamCachingIfNeeded(String urlString, String streamName, String audioTrackName) {
     // HLS caching is not supported on Android
     return Future<void>.value();
   }
 
   @override
-  Future<bool> isHlsAvailableOffline(String urlString) {
+  Future<bool> isHlsAvailableOffline(String urlString, String? audioTrackName) {
     // HLS caching is not supported on Android
     return Future<bool>.value(false);
   }
