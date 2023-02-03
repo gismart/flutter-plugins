@@ -84,7 +84,7 @@ NSMutableDictionary *willDownloadToUrlMap;
                 localAudioTrackName = @"und"; // as defined in ISO 639-2
             }
             
-            if(audioTrackName == localAudioTrackName) {
+            if([audioTrackName isEqualToString:localAudioTrackName]) {
                 AVMutableMediaSelection* mutableMediaSelection = [preferredMediaSelection mutableCopy];
                 [mutableMediaSelection selectMediaOption:audioTrack inMediaSelectionGroup:audioSelectionGroup];
                 [finalMediaSelections addObject:mutableMediaSelection];
@@ -195,7 +195,7 @@ NSMutableDictionary *willDownloadToUrlMap;
                         localAudioTrackName = @"und"; // as defined in ISO 639-2
                     }
                     
-                    if(audioTrackName == localAudioTrackName) {
+                    if([audioTrackName isEqualToString:localAudioTrackName]) {
                         return AssetDownloaded;
                     }
                 }
