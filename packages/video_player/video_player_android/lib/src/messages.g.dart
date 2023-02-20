@@ -167,6 +167,7 @@ class CreateMessage {
     this.uri,
     this.packageName,
     this.formatHint,
+    this.audioTrackName,
     required this.httpHeaders,
   });
 
@@ -174,6 +175,7 @@ class CreateMessage {
   String? uri;
   String? packageName;
   String? formatHint;
+  String? audioTrackName;
   Map<String?, String?> httpHeaders;
 
   Object encode() {
@@ -182,6 +184,7 @@ class CreateMessage {
     pigeonMap['uri'] = uri;
     pigeonMap['packageName'] = packageName;
     pigeonMap['formatHint'] = formatHint;
+    pigeonMap['audioTrackName'] = audioTrackName;
     pigeonMap['httpHeaders'] = httpHeaders;
     return pigeonMap;
   }
@@ -193,6 +196,7 @@ class CreateMessage {
       uri: pigeonMap['uri'] as String?,
       packageName: pigeonMap['packageName'] as String?,
       formatHint: pigeonMap['formatHint'] as String?,
+      audioTrackName: pigeonMap['audioTrackName'] as String?,
       httpHeaders: (pigeonMap['httpHeaders'] as Map<Object?, Object?>?)!.cast<String?, String?>(),
     );
   }
