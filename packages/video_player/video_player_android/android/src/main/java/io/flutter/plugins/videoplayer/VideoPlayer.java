@@ -77,6 +77,7 @@ final class VideoPlayer {
       String dataSource,
       String formatHint,
       @NonNull Map<String, String> httpHeaders,
+      String audioTrackName,
       VideoPlayerOptions options) {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
@@ -84,6 +85,13 @@ final class VideoPlayer {
     this.context = context;
 
     trackSelector = new DefaultTrackSelector(context);
+    if(audioTrackName != null) {
+      trackSelector.setParameters(
+              trackSelector
+                      .buildUponParameters()
+                      .setPreferredAudioLanguage(audioTrackName));
+    }
+
     ExoPlayer exoPlayer = new ExoPlayer.Builder(context).setTrackSelector(trackSelector).build();
 
     Uri uri = Uri.parse(dataSource);

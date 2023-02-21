@@ -55,6 +55,7 @@ class CreateMessage {
   String? uri;
   String? packageName;
   String? formatHint;
+  String? audioTrackName;
   Map<String?, String?> httpHeaders;
 }
 

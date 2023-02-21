@@ -60,6 +60,7 @@ class AndroidVideoPlayer extends VideoPlayerPlatform {
       uri: uri,
       httpHeaders: httpHeaders,
       formatHint: formatHint,
+      audioTrackName: dataSource.audioTrackName,
     );
 
     final TextureMessage response = await _api.create(message);

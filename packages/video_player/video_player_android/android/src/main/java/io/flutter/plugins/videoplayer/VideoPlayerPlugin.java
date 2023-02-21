@@ -124,6 +124,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
             flutterState.binaryMessenger, "flutter.io/videoPlayer/videoEvents" + handle.id());
 
     VideoPlayer player;
+    String audioTrackName = arg.getAudioTrackName();
     if (arg.getAsset() != null) {
       String assetLookupKey;
       if (arg.getPackageName() != null) {
@@ -140,6 +141,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
               "asset:///" + assetLookupKey,
               null,
               null,
+              audioTrackName,
               options);
     } else {
       @SuppressWarnings("unchecked")
@@ -152,6 +154,7 @@ public class VideoPlayerPlugin implements FlutterPlugin, AndroidVideoPlayerApi {
               arg.getUri(),
               arg.getFormatHint(),
               httpHeaders,
+              audioTrackName,
               options);
     }
     videoPlayers.put(handle.id(), player);

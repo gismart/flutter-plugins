@@ -381,6 +381,12 @@ public class Messages {
       this.formatHint = setterArg;
     }
 
+    private @Nullable String audioTrackName;
+    public @Nullable String getAudioTrackName() { return audioTrackName; }
+    public void setAudioTrackName(@Nullable String setterArg) {
+      this.audioTrackName = setterArg;
+    }
+
     private @NonNull Map<String, String> httpHeaders;
     public @NonNull Map<String, String> getHttpHeaders() { return httpHeaders; }
     public void setHttpHeaders(@NonNull Map<String, String> setterArg) {
@@ -413,6 +419,11 @@ public class Messages {
         this.formatHint = setterArg;
         return this;
       }
+      private @Nullable String audioTrackName;
+      public @NonNull Builder setAudioTrackName(@Nullable String setterArg) {
+        this.audioTrackName = setterArg;
+        return this;
+      }
       private @Nullable Map<String, String> httpHeaders;
       public @NonNull Builder setHttpHeaders(@NonNull Map<String, String> setterArg) {
         this.httpHeaders = setterArg;
@@ -424,6 +435,7 @@ public class Messages {
         pigeonReturn.setUri(uri);
         pigeonReturn.setPackageName(packageName);
         pigeonReturn.setFormatHint(formatHint);
+        pigeonReturn.setAudioTrackName(audioTrackName);
         pigeonReturn.setHttpHeaders(httpHeaders);
         return pigeonReturn;
       }
@@ -434,6 +446,7 @@ public class Messages {
       toMapResult.put("uri", uri);
       toMapResult.put("packageName", packageName);
       toMapResult.put("formatHint", formatHint);
+      toMapResult.put("audioTrackName", audioTrackName);
       toMapResult.put("httpHeaders", httpHeaders);
       return toMapResult;
     }
@@ -447,6 +460,8 @@ public class Messages {
       pigeonResult.setPackageName((String)packageName);
       Object formatHint = map.get("formatHint");
       pigeonResult.setFormatHint((String)formatHint);
+      Object audioTrackName = map.get("audioTrackName");
+      pigeonResult.setAudioTrackName((String)audioTrackName);
       Object httpHeaders = map.get("httpHeaders");
       pigeonResult.setHttpHeaders((Map<String, String>)httpHeaders);
       return pigeonResult;
