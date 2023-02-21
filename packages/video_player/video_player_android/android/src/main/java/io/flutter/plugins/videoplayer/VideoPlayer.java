@@ -85,10 +85,12 @@ final class VideoPlayer {
     this.context = context;
 
     trackSelector = new DefaultTrackSelector(context);
-    trackSelector.setParameters(
-            trackSelector
-                    .buildUponParameters()
-                    .setPreferredAudioLanguage(audioTrackName));
+    if(audioTrackName != null) {
+      trackSelector.setParameters(
+              trackSelector
+                      .buildUponParameters()
+                      .setPreferredAudioLanguage(audioTrackName));
+    }
 
     ExoPlayer exoPlayer = new ExoPlayer.Builder(context).setTrackSelector(trackSelector).build();
 
