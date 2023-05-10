@@ -30,6 +30,7 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion 31
+    namespace 'io.flutter.plugins.videoplayer'
 
     defaultConfig {
         minSdkVersion 16
