@@ -1,3 +1,48 @@
+## 0.12.0+5
+
+* Migrates to `dart:ui_web` APIs.
+* Updates minimum supported SDK version to Flutter 3.13.0/Dart 3.1.0.
+
+## 0.12.0+4
+
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
+
+## 0.12.0+3
+
+* Fixes null cast error on accounts without picture or name details.
+
+## 0.12.0+2
+
+* Adds compatibility with `http` 1.0.
+
+## 0.12.0+1
+
+* Fixes unawaited_futures violations.
+
+## 0.12.0
+
+* Authentication:
+  * Adds web-only `renderButton` method and its configuration object, as a new
+    authentication mechanism.
+  * Prepares a `userDataEvents` Stream, so the Google Sign In Button can propagate
+    authentication changes to the core plugin.
+  * **Breaking Change:** `signInSilently` now returns an authenticated (but not authorized) user.
+* Authorization:
+  * Implements the new `canAccessScopes` method.
+  * Ensures that the `requestScopes` call doesn't trigger user selection when the
+    current user is known (similar to what `signIn` does).
+* Updates minimum Flutter version to 3.3.
+
+## 0.11.0+2
+
+* Clarifies explanation of endorsement in README.
+* Aligns Dart and Flutter SDK constraints.
+
+## 0.11.0+1
+
+* Updates links for the merge of flutter/plugins into flutter/packages.
+
 ## 0.11.0
 
 * **Breaking Change:** Migrates JS-interop to `package:google_identity_services_web`

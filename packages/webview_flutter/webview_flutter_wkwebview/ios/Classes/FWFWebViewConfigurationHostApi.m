@@ -22,7 +22,7 @@
 }
 
 - (void)createWithConfiguration:(WKWebViewConfiguration *)configuration
-                     completion:(void (^)(NSError *_Nullable))completion {
+                     completion:(void (^)(FlutterError *_Nullable))completion {
   long identifier = [self.instanceManager addHostCreatedInstance:configuration];
   [self createWithIdentifier:@(identifier) completion:completion];
 }
@@ -47,7 +47,7 @@
                                 keyPath:keyPath
                                  object:object
                                  change:change
-                             completion:^(NSError *error) {
+                             completion:^(FlutterError *error) {
                                NSAssert(!error, @"%@", error);
                              }];
 }
@@ -104,6 +104,23 @@
       setAllowsInlineMediaPlayback:allow.boolValue];
 }
 
+- (void)setLimitsNavigationsToAppBoundDomainsForConfigurationWithIdentifier:
+            (nonnull NSNumber *)identifier
+                                                                  isLimited:
+                                                                      (nonnull NSNumber *)limit
+                                                                      error:(FlutterError *_Nullable
+                                                                                 *_Nonnull)error {
+  if (@available(iOS 14, *)) {
+    [[self webViewConfigurationForIdentifier:identifier]
+        setLimitsNavigationsToAppBoundDomains:limit.boolValue];
+  } else {
+    *error = [FlutterError
+        errorWithCode:@"FWFUnsupportedVersionError"
+              message:@"setLimitsNavigationsToAppBoundDomains is only supported on versions 14+."
+              details:nil];
+  }
+}
+
 - (void)
     setMediaTypesRequiresUserActionForConfigurationWithIdentifier:(nonnull NSNumber *)identifier
                                                          forTypes:
@@ -117,28 +134,10 @@
 
   WKWebViewConfiguration *configuration =
       (WKWebViewConfiguration *)[self webViewConfigurationForIdentifier:identifier];
-  if (@available(iOS 10.0, *)) {
-    WKAudiovisualMediaTypes typesInt = 0;
-    for (FWFWKAudiovisualMediaTypeEnumData *data in types) {
-      typesInt |= FWFWKAudiovisualMediaTypeFromEnumData(data);
-    }
-    [configuration setMediaTypesRequiringUserActionForPlayback:typesInt];
-  } else {
-    for (FWFWKAudiovisualMediaTypeEnumData *data in types) {
-      switch (data.value) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-        case FWFWKAudiovisualMediaTypeEnumNone:
-          configuration.requiresUserActionForMediaPlayback = false;
-          break;
-        case FWFWKAudiovisualMediaTypeEnumAudio:
-        case FWFWKAudiovisualMediaTypeEnumVideo:
-        case FWFWKAudiovisualMediaTypeEnumAll:
-          configuration.requiresUserActionForMediaPlayback = true;
-          break;
-#pragma clang diagnostic pop
-      }
-    }
+  WKAudiovisualMediaTypes typesInt = 0;
+  for (FWFWKAudiovisualMediaTypeEnumData *data in types) {
+    typesInt |= FWFNativeWKAudiovisualMediaTypeFromEnumData(data);
   }
+  [configuration setMediaTypesRequiringUserActionForPlayback:typesInt];
 }
 @end

@@ -28,9 +28,9 @@ const String _videoAssetKey = 'assets/Butterfly-209.mp4';
 // TODO(stuartmorgan): Convert this to a local `HttpServer` that vends the
 // assets directly, https://github.com/flutter/flutter/issues/95420
 String getUrlForAssetAsNetworkSource(String assetKey) {
-  return 'https://github.com/flutter/plugins/blob/'
+  return 'https://github.com/flutter/packages/blob/'
       // This hash can be rolled forward to pick up newly-added assets.
-      'cb381ced070d356799dddf24aca38ce0579d3d7b'
+      '2e1673307ff7454aff40b47024eaed49a9e77e81'
       '/packages/video_player/video_player/example/'
       '$assetKey'
       '?raw=true';
@@ -71,16 +71,27 @@ void main() {
       expect(await controller.position, greaterThan(Duration.zero));
     });
 
-    testWidgets('can seek', (WidgetTester tester) async {
-      await controller.initialize();
+    testWidgets(
+      'can seek',
+      (WidgetTester tester) async {
+        await controller.initialize();
 
-      await controller.seekTo(const Duration(seconds: 3));
+        await controller.seekTo(const Duration(seconds: 3));
 
-      // TODO(stuartmorgan): Switch to _controller.position once seekTo is
-      // fixed on the native side to wait for completion, so this is testing
-      // the native code rather than the MiniController position cache.
-      expect(controller.value.position, const Duration(seconds: 3));
-    });
+        expect(controller.value.position, const Duration(seconds: 3));
+      },
+    );
+
+    testWidgets(
+      'can seek to end',
+      (WidgetTester tester) async {
+        await controller.initialize();
+
+        await controller.seekTo(controller.value.duration);
+
+        expect(controller.value.duration, controller.value.position);
+      },
+    );
 
     testWidgets('can be paused', (WidgetTester tester) async {
       await controller.initialize();

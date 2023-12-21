@@ -1,3 +1,26 @@
+## 2.6.0
+
+* Adds support to control video fps and bitrate. See `CameraPlatform.createCameraWithSettings`.
+
+## 2.5.2
+
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
+
+## 2.5.1
+
+* Removes obsolete null checks on non-nullable values.
+* Updates minimum supported SDK version to Flutter 3.3/Dart 2.18.
+
+## 2.5.0
+
+* Adds NV21 as an image stream format (suitable for Android).
+* Aligns Dart and Flutter SDK constraints.
+
+## 2.4.1
+
+* Updates links for the merge of flutter/plugins into flutter/packages.
+
 ## 2.4.0
 
 * Allows camera to be switched while video recording.

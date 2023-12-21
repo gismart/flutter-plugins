@@ -37,13 +37,6 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
     return response.textureId;
   }
 
-  @override
-  Future<int?> createWithHlsCachingSupport(DataSource dataSource) async {
-    final CreateMessage message = _obtainCreateMessageFromDataSource(dataSource);
-    final TextureMessage response = await _api.createWithHlsCachingSupport(message);
-    return response.textureId;
-  }
-
   CreateMessage _obtainCreateMessageFromDataSource(DataSource dataSource) {
     String? asset;
     String? packageName;
@@ -80,6 +73,13 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
       name: name,
       audioTrackName: audioTrackName,
     );
+  }
+
+  @override
+  Future<int?> createWithHlsCachingSupport(DataSource dataSource) async {
+    final CreateMessage message = _obtainCreateMessageFromDataSource(dataSource);
+    final TextureMessage response = await _api.createWithHlsCachingSupport(message);
+    return response.textureId;
   }
 
   @override
@@ -207,6 +207,11 @@ class AVFoundationVideoPlayer extends VideoPlayerPlatform {
           return VideoEvent(eventType: VideoEventType.bufferingStart);
         case 'bufferingEnd':
           return VideoEvent(eventType: VideoEventType.bufferingEnd);
+        case 'isPlayingStateUpdate':
+          return VideoEvent(
+            eventType: VideoEventType.isPlayingStateUpdate,
+            isPlaying: map['isPlaying'] as bool,
+          );
         default:
           return VideoEvent(eventType: VideoEventType.unknown);
       }

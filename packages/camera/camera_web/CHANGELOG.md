@@ -1,5 +1,34 @@
-## NEXT
+## 0.3.2+3
 
+* Migrates to `dart:ui_web` APIs.
+* Updates minimum supported SDK version to Flutter 3.13.0/Dart 3.1.0.
+
+## 0.3.2+2
+
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
+
+## 0.3.2+1
+
+* Updates README to improve example of `Image` creation.
+
+## 0.3.2
+
+* Changes `availableCameras` to not ask for the microphone permission.
+
+## 0.3.1+4
+
+* Removes obsolete null checks on non-nullable values.
+* Updates minimum supported SDK version to Flutter 3.3/Dart 2.18.
+
+## 0.3.1+3
+
+* Clarifies explanation of endorsement in README.
+* Aligns Dart and Flutter SDK constraints.
+
+## 0.3.1+2
+
+* Updates links for the merge of flutter/plugins into flutter/packages.
 * Updates minimum Flutter version to 3.0.
 
 ## 0.3.1+1

@@ -2,10 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(a14n): remove this import once Flutter 3.1 or later reaches stable (including flutter/flutter#106316)
-// ignore: unnecessary_import
-import 'dart:ui';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_player_android/src/messages.g.dart';
@@ -191,6 +187,18 @@ void main() {
       expect(textureId, 3);
     });
 
+    test('create with file (some headers)', () async {
+      final int? textureId = await player.create(DataSource(
+        sourceType: DataSourceType.file,
+        uri: 'someUri',
+        httpHeaders: <String, String>{'Authorization': 'Bearer token'},
+      ));
+      expect(log.log.last, 'create');
+      expect(log.createMessage?.uri, 'someUri');
+      expect(log.createMessage?.httpHeaders,
+          <String, String>{'Authorization': 'Bearer token'});
+      expect(textureId, 3);
+    });
     test('setLooping', () async {
       await player.setLooping(1, true);
       expect(log.log.last, 'setLooping');
@@ -249,10 +257,11 @@ void main() {
     });
 
     test('videoEventsFor', () async {
+      const String mockChannel = 'flutter.io/videoPlayer/videoEvents123';
       _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
           .defaultBinaryMessenger
           .setMockMessageHandler(
-        'flutter.io/videoPlayer/videoEvents123',
+        mockChannel,
         (ByteData? message) async {
           final MethodCall methodCall =
               const StandardMethodCodec().decodeMethodCall(message);
@@ -260,7 +269,7 @@ void main() {
             await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
                 .defaultBinaryMessenger
                 .handlePlatformMessage(
-                    'flutter.io/videoPlayer/videoEvents123',
+                    mockChannel,
                     const StandardMethodCodec()
                         .encodeSuccessEnvelope(<String, dynamic>{
                       'event': 'initialized',
@@ -273,7 +282,7 @@ void main() {
             await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
                 .defaultBinaryMessenger
                 .handlePlatformMessage(
-                    'flutter.io/videoPlayer/videoEvents123',
+                    mockChannel,
                     const StandardMethodCodec()
                         .encodeSuccessEnvelope(<String, dynamic>{
                       'event': 'initialized',
@@ -287,7 +296,7 @@ void main() {
             await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
                 .defaultBinaryMessenger
                 .handlePlatformMessage(
-                    'flutter.io/videoPlayer/videoEvents123',
+                    mockChannel,
                     const StandardMethodCodec()
                         .encodeSuccessEnvelope(<String, dynamic>{
                       'event': 'completed',
@@ -297,7 +306,7 @@ void main() {
             await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
                 .defaultBinaryMessenger
                 .handlePlatformMessage(
-                    'flutter.io/videoPlayer/videoEvents123',
+                    mockChannel,
                     const StandardMethodCodec()
                         .encodeSuccessEnvelope(<String, dynamic>{
                       'event': 'bufferingUpdate',
@@ -311,7 +320,7 @@ void main() {
             await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
                 .defaultBinaryMessenger
                 .handlePlatformMessage(
-                    'flutter.io/videoPlayer/videoEvents123',
+                    mockChannel,
                     const StandardMethodCodec()
                         .encodeSuccessEnvelope(<String, dynamic>{
                       'event': 'bufferingStart',
@@ -321,10 +330,32 @@ void main() {
             await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
                 .defaultBinaryMessenger
                 .handlePlatformMessage(
-                    'flutter.io/videoPlayer/videoEvents123',
+                    mockChannel,
                     const StandardMethodCodec()
                         .encodeSuccessEnvelope(<String, dynamic>{
                       'event': 'bufferingEnd',
+                    }),
+                    (ByteData? data) {});
+
+            await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
+                .defaultBinaryMessenger
+                .handlePlatformMessage(
+                    mockChannel,
+                    const StandardMethodCodec()
+                        .encodeSuccessEnvelope(<String, dynamic>{
+                      'event': 'isPlayingStateUpdate',
+                      'isPlaying': true,
+                    }),
+                    (ByteData? data) {});
+
+            await _ambiguate(TestDefaultBinaryMessengerBinding.instance)!
+                .defaultBinaryMessenger
+                .handlePlatformMessage(
+                    mockChannel,
+                    const StandardMethodCodec()
+                        .encodeSuccessEnvelope(<String, dynamic>{
+                      'event': 'isPlayingStateUpdate',
+                      'isPlaying': false,
                     }),
                     (ByteData? data) {});
 
@@ -366,6 +397,14 @@ void main() {
                 ]),
             VideoEvent(eventType: VideoEventType.bufferingStart),
             VideoEvent(eventType: VideoEventType.bufferingEnd),
+            VideoEvent(
+              eventType: VideoEventType.isPlayingStateUpdate,
+              isPlaying: true,
+            ),
+            VideoEvent(
+              eventType: VideoEventType.isPlayingStateUpdate,
+              isPlaying: false,
+            ),
           ]));
     });
   });

@@ -32,6 +32,7 @@ import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelectionOverride;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector.SelectionOverride;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSource;
@@ -64,11 +65,13 @@ final class VideoPlayer {
 
   private final EventChannel eventChannel;
 
+  private static final String USER_AGENT = "User-Agent";
+
   @VisibleForTesting boolean isInitialized = false;
 
   private final VideoPlayerOptions options;
 
-  private final Context context;
+  private DefaultHttpDataSource.Factory httpDataSourceFactory = new DefaultHttpDataSource.Factory();
 
   VideoPlayer(
       Context context,
@@ -82,7 +85,6 @@ final class VideoPlayer {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
     this.options = options;
-    this.context = context;
 
     trackSelector = new DefaultTrackSelector(context);
     if(audioTrackName != null) {
@@ -93,25 +95,13 @@ final class VideoPlayer {
     }
 
     ExoPlayer exoPlayer = new ExoPlayer.Builder(context).setTrackSelector(trackSelector).build();
-
     Uri uri = Uri.parse(dataSource);
-    DataSource.Factory dataSourceFactory;
 
-    if (isHTTP(uri)) {
-      DefaultHttpDataSource.Factory httpDataSourceFactory =
-          new DefaultHttpDataSource.Factory()
-              .setUserAgent("ExoPlayer")
-              .setAllowCrossProtocolRedirects(true);
+    buildHttpDataSourceFactory(httpHeaders);
+    DataSource.Factory dataSourceFactory =
+        new DefaultDataSource.Factory(context, httpDataSourceFactory);
 
-      if (httpHeaders != null && !httpHeaders.isEmpty()) {
-        httpDataSourceFactory.setDefaultRequestProperties(httpHeaders);
-      }
-      dataSourceFactory = httpDataSourceFactory;
-    } else {
-      dataSourceFactory = new DefaultDataSource.Factory(context);
-    }
-
-    MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint, context);
+    MediaSource mediaSource = buildMediaSource(uri, dataSourceFactory, formatHint);
 
     exoPlayer.setMediaSource(mediaSource);
     exoPlayer.prepare();
@@ -122,30 +112,37 @@ final class VideoPlayer {
   // Constructor used to directly test members of this class.
   @VisibleForTesting
   VideoPlayer(
-      Context context,
       ExoPlayer exoPlayer,
       EventChannel eventChannel,
       TextureRegistry.SurfaceTextureEntry textureEntry,
       VideoPlayerOptions options,
-      QueuingEventSink eventSink) {
+      QueuingEventSink eventSink,
+      DefaultHttpDataSource.Factory httpDataSourceFactory) {
     this.eventChannel = eventChannel;
     this.textureEntry = textureEntry;
     this.options = options;
-    this.context = context;
+    this.httpDataSourceFactory = httpDataSourceFactory;
 
     setUpVideoPlayer(exoPlayer, eventSink);
   }
 
-  private static boolean isHTTP(Uri uri) {
-    if (uri == null || uri.getScheme() == null) {
-      return false;
+  @VisibleForTesting
+  public void buildHttpDataSourceFactory(@NonNull Map<String, String> httpHeaders) {
+    final boolean httpHeadersNotEmpty = !httpHeaders.isEmpty();
+    final String userAgent =
+        httpHeadersNotEmpty && httpHeaders.containsKey(USER_AGENT)
+            ? httpHeaders.get(USER_AGENT)
+            : "ExoPlayer";
+
+    httpDataSourceFactory.setUserAgent(userAgent).setAllowCrossProtocolRedirects(true);
+
+    if (httpHeadersNotEmpty) {
+      httpDataSourceFactory.setDefaultRequestProperties(httpHeaders);
     }
-    String scheme = uri.getScheme();
-    return scheme.equals("http") || scheme.equals("https");
   }
 
   private MediaSource buildMediaSource(
-      Uri uri, DataSource.Factory mediaDataSourceFactory, String formatHint, Context context) {
+      Uri uri, DataSource.Factory mediaDataSourceFactory, String formatHint) {
     int type;
     if (formatHint == null) {
       type = Util.inferContentType(uri);
@@ -171,13 +168,11 @@ final class VideoPlayer {
     switch (type) {
       case C.CONTENT_TYPE_SS:
         return new SsMediaSource.Factory(
-                new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
-                new DefaultDataSource.Factory(context, mediaDataSourceFactory))
+                new DefaultSsChunkSource.Factory(mediaDataSourceFactory), mediaDataSourceFactory)
             .createMediaSource(MediaItem.fromUri(uri));
       case C.CONTENT_TYPE_DASH:
         return new DashMediaSource.Factory(
-                new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
-                new DefaultDataSource.Factory(context, mediaDataSourceFactory))
+                new DefaultDashChunkSource.Factory(mediaDataSourceFactory), mediaDataSourceFactory)
             .createMediaSource(MediaItem.fromUri(uri));
       case C.CONTENT_TYPE_HLS:
         return new HlsMediaSource.Factory(mediaDataSourceFactory)
@@ -248,10 +243,20 @@ final class VideoPlayer {
           }
 
           @Override
-          public void onPlayerError(final PlaybackException error) {
+          public void onPlayerError(@NonNull final PlaybackException error) {
             setBuffering(false);
             if (eventSink != null) {
               eventSink.error("VideoError", "Video player had error " + error, null);
+            }
+          }
+
+          @Override
+          public void onIsPlayingChanged(boolean isPlaying) {
+            if (eventSink != null) {
+              Map<String, Object> event = new HashMap<>();
+              event.put("event", "isPlayingStateUpdate");
+              event.put("isPlaying", isPlaying);
+              eventSink.success(event);
             }
           }
         });
@@ -372,11 +377,11 @@ final class VideoPlayer {
   private void applyAudioTrackSettings(int rendererIndex, int trackIndex, int trackGroupIndex, MappingTrackSelector.MappedTrackInfo mappedTrackInfo) {
     DefaultTrackSelector.Parameters.Builder builder = trackSelector.buildUponParameters();
     //builder.clearOverridesOfType(C.TRACK_TYPE_AUDIO);
-    builder.clearSelectionOverrides(rendererIndex);
+    builder.clearOverridesOfType(rendererIndex);
     builder.setRendererDisabled(rendererIndex, false);
-    DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(trackGroupIndex, trackIndex);
-    //builder.addOverride(override);
-    builder.setSelectionOverride(rendererIndex, mappedTrackInfo.getTrackGroups(rendererIndex), override);
+    TrackGroup trackGroup = mappedTrackInfo.getTrackGroups(rendererIndex).get(trackGroupIndex);
+    TrackSelectionOverride trackSelectionOverride = new TrackSelectionOverride(trackGroup, trackIndex);
+    builder.addOverride(trackSelectionOverride);
     trackSelector.setParameters(builder.build());
   }
 

@@ -1,5 +1,25 @@
-## NEXT
+## 2.4.1
 
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
+
+## 2.4.0
+
+* Adds options for gesture handling and tilt controls on web.
+
+## 2.3.0
+
+* Adds a `cloudMapId` parameter to support cloud-based map styling.
+
+## 2.2.7
+
+* Removes obsolete null checks on non-nullable values.
+* Updates minimum Flutter version to 3.3.
+* Aligns Dart and Flutter SDK constraints.
+
+## 2.2.6
+
+* Updates links for the merge of flutter/plugins into flutter/packages.
 * Updates minimum Flutter version to 3.0.
 
 ## 2.2.5
@@ -47,7 +67,7 @@
 
 ## 2.1.5
 
-Removes dependency on `meta`.
+* Removes dependency on `meta`.
 
 ## 2.1.4
 

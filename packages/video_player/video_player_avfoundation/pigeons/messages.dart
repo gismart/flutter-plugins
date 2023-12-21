@@ -10,7 +10,7 @@ import 'package:pigeon/pigeon.dart';
   objcHeaderOut: 'ios/Classes/messages.g.h',
   objcSourceOut: 'ios/Classes/messages.g.m',
   objcOptions: ObjcOptions(
-    prefix: 'FLT',
+    prefix: 'FVP',
   ),
   copyrightHeader: 'pigeons/copyright.txt',
 ))
@@ -109,6 +109,7 @@ abstract class AVFoundationVideoPlayerApi {
   void play(TextureMessage msg);
   @ObjCSelector('position:')
   PositionMessage position(TextureMessage msg);
+  @async
   @ObjCSelector('seekTo:')
   void seekTo(PositionMessage msg);
   @ObjCSelector('pause:')

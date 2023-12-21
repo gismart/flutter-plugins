@@ -1,14 +1,59 @@
+'p: animations':
+  - packages/animations/**/*
+
 'p: camera':
   - packages/camera/**/*
+
+'p: cross_file':
+  - packages/cross_file/**/*
+
+'p: css_colors':
+  - packages/css_colors/**/*
+
+'p: cupertino_icons':
+  - third_party/packages/cupertino_icons/**/*
+
+'p: dynamic_layouts':
+  - packages/dynamic_layouts/**/*
 
 'p: espresso':
   - packages/espresso/**/*
 
+'p: extension_google_sign_in_as_googleapis_auth':
+  - packages/extension_google_sign_in_as_googleapis_auth/**/*
+
 'p: file_selector':
   - packages/file_selector/**/*
 
+'p: flutter_adaptive_scaffold':
+  - packages/flutter_adaptive_scaffold/**/*
+
+'p: flutter_image':
+  - packages/flutter_image/**/*
+
+'p: flutter_lints':
+  - packages/flutter_lints/**/*
+
+'p: flutter_markdown':
+  - packages/flutter_markdown/**/*
+
+'p: flutter_migrate':
+  - packages/flutter_migrate/**/*
+
 'p: flutter_plugin_android_lifecycle':
   - packages/flutter_plugin_android_lifecycle/**/*
+
+'p: flutter_template_images':
+  - packages/flutter_template_images/**/*
+
+'p: go_router':
+  - packages/go_router/**/*
+
+'p: go_router_builder':
+  - packages/go_router_builder/**/*
+
+'p: google_identity_services':
+  - packages/google_indentity_services_web/**
 
 'p: google_maps_flutter':
   - packages/google_maps_flutter/**/*
@@ -28,17 +73,38 @@
 'p: local_auth':
   - packages/local_auth/**/*
 
+'p: metrics_center':
+  - packages/metrics_center/**/*
+
+'p: multicast_dns':
+  - packages/multicast_dns/**/*
+
+'p: palette_generator':
+  - packages/palette_generator/**/*
+
 'p: path_provider':
   - packages/path_provider/**/*
+
+'p: pigeon':
+  - packages/pigeon/**/*
 
 'p: plugin_platform_interface':
   - packages/plugin_platform_interface/**/*
 
+'p: pointer_interceptor':
+  - packages/pointer_interceptor/**/*
+
 'p: quick_actions':
   - packages/quick_actions/**/*
 
+'p: rfw':
+  - packages/rfw/**/*
+
 'p: shared_preferences':
   - packages/shared_preferences/**/*
+
+'p: standard_message_codec':
+  - packages/standard_message_codec/**/*
 
 'p: url_launcher':
   - packages/url_launcher/**/*
@@ -46,8 +112,14 @@
 'p: video_player':
   - packages/video_player/**/*
 
+'p: web_benchmarks':
+  - packages/web_benchmarks/**/*
+
 'p: webview_flutter':
   - packages/webview_flutter/**/*
+
+'p: xdg_directories':
+  - packages/xdg_directories/**/*
 
 'platform-android':
   - packages/*/*_android/**/*
@@ -74,3 +146,4 @@
 'platform-windows':
   - packages/*/*_windows/**/*
   - packages/**/windows/**/*
+

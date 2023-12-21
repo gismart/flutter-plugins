@@ -1,5 +1,21 @@
-## NEXT
+## 0.2.1+8
 
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
+
+## 0.2.1+7
+
+* Fixes unawaited_futures violations.
+* Updates minimum supported SDK version to Flutter 3.3/Dart 2.18.
+
+## 0.2.1+6
+
+* Sets a cmake_policy compatibility version to fix build warnings.
+* Aligns Dart and Flutter SDK constraints.
+
+## 0.2.1+5
+
+* Updates links for the merge of flutter/plugins into flutter/packages.
 * Updates minimum Flutter version to 3.0.
 
 ## 0.2.1+4

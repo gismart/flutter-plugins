@@ -56,7 +56,6 @@ static bool feq(CGFloat a, CGFloat b) { return fabs(b - a) < FLT_EPSILON; }
 
 - (void)testLoadRequestWithInvalidUrl {
   FWFWebView *mockWebView = OCMClassMock([FWFWebView class]);
-  OCMReject([mockWebView loadRequest:OCMOCK_ANY]);
 
   FWFInstanceManager *instanceManager = [[FWFInstanceManager alloc] init];
   [instanceManager addDartCreatedInstance:mockWebView withIdentifier:0];
@@ -65,16 +64,24 @@ static bool feq(CGFloat a, CGFloat b) { return fabs(b - a) < FLT_EPSILON; }
       initWithBinaryMessenger:OCMProtocolMock(@protocol(FlutterBinaryMessenger))
               instanceManager:instanceManager];
 
+  NSString *badURLString = @"%invalidUrl%";
   FlutterError *error;
-  FWFNSUrlRequestData *requestData = [FWFNSUrlRequestData makeWithUrl:@"%invalidUrl%"
+  FWFNSUrlRequestData *requestData = [FWFNSUrlRequestData makeWithUrl:badURLString
                                                            httpMethod:nil
                                                              httpBody:nil
                                                   allHttpHeaderFields:@{}];
   [hostAPI loadRequestForWebViewWithIdentifier:@0 request:requestData error:&error];
-  XCTAssertNotNil(error);
-  XCTAssertEqualObjects(error.code, @"FWFURLRequestParsingError");
-  XCTAssertEqualObjects(error.message, @"Failed instantiating an NSURLRequest.");
-  XCTAssertEqualObjects(error.details, @"URL was: '%invalidUrl%'");
+  // When linking against the iOS 17 SDK or later, NSURL uses a lenient parser, and won't
+  // fail to parse URLs, so the test must allow for either outcome.
+  if (error) {
+    XCTAssertEqualObjects(error.code, @"FWFURLRequestParsingError");
+    XCTAssertEqualObjects(error.message, @"Failed instantiating an NSURLRequest.");
+    XCTAssertEqualObjects(error.details, @"URL was: '%invalidUrl%'");
+  } else {
+    NSMutableURLRequest *request =
+        [NSMutableURLRequest requestWithURL:[NSURL URLWithString:badURLString]];
+    OCMVerify([mockWebView loadRequest:request]);
+  }
 }
 
 - (void)testSetCustomUserAgent {
@@ -88,7 +95,7 @@ static bool feq(CGFloat a, CGFloat b) { return fabs(b - a) < FLT_EPSILON; }
               instanceManager:instanceManager];
 
   FlutterError *error;
-  [hostAPI setUserAgentForWebViewWithIdentifier:@0 userAgent:@"userA" error:&error];
+  [hostAPI setCustomUserAgentForWebViewWithIdentifier:@0 userAgent:@"userA" error:&error];
   OCMVerify([mockWebView setCustomUserAgent:@"userA"]);
   XCTAssertNil(error);
 }
@@ -408,10 +415,10 @@ static bool feq(CGFloat a, CGFloat b) { return fabs(b - a) < FLT_EPSILON; }
   XCTAssertTrue([errorData isKindOfClass:[FWFNSErrorData class]]);
   XCTAssertEqualObjects(errorData.code, @0);
   XCTAssertEqualObjects(errorData.domain, @"errorDomain");
-  XCTAssertEqualObjects(errorData.localizedDescription, @"description");
+  XCTAssertEqualObjects(errorData.userInfo, @{NSLocalizedDescriptionKey : @"description"});
 }
 
-- (void)testWebViewContentInsetBehaviorShouldBeNeverOnIOS11 API_AVAILABLE(ios(11.0)) {
+- (void)testWebViewContentInsetBehaviorShouldBeNever {
   FWFInstanceManager *instanceManager = [[FWFInstanceManager alloc] init];
   FWFWebViewHostApiImpl *hostAPI = [[FWFWebViewHostApiImpl alloc]
       initWithBinaryMessenger:OCMProtocolMock(@protocol(FlutterBinaryMessenger))
@@ -454,16 +461,49 @@ static bool feq(CGFloat a, CGFloat b) { return fabs(b - a) < FLT_EPSILON; }
   XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(webView.scrollView.contentInset, UIEdgeInsetsZero));
   XCTAssertTrue(CGRectEqualToRect(webView.frame, CGRectMake(0, 0, 300, 200)));
 
-  if (@available(iOS 11, *)) {
-    // After iOS 11, we need to make sure the contentInset compensates the adjustedContentInset.
-    UIScrollView *partialMockScrollView = OCMPartialMock(webView.scrollView);
-    UIEdgeInsets insetToAdjust = UIEdgeInsetsMake(0, 0, 300, 0);
-    OCMStub(partialMockScrollView.adjustedContentInset).andReturn(insetToAdjust);
-    XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(webView.scrollView.contentInset, UIEdgeInsetsZero));
+  // Make sure the contentInset compensates the adjustedContentInset.
+  UIScrollView *partialMockScrollView = OCMPartialMock(webView.scrollView);
+  UIEdgeInsets insetToAdjust = UIEdgeInsetsMake(0, 0, 300, 0);
+  OCMStub(partialMockScrollView.adjustedContentInset).andReturn(insetToAdjust);
+  XCTAssertTrue(UIEdgeInsetsEqualToEdgeInsets(webView.scrollView.contentInset, UIEdgeInsetsZero));
 
-    webView.frame = CGRectMake(0, 0, 300, 100);
-    XCTAssertTrue(feq(webView.scrollView.contentInset.bottom, -insetToAdjust.bottom));
-    XCTAssertTrue(CGRectEqualToRect(webView.frame, CGRectMake(0, 0, 300, 100)));
-  }
+  webView.frame = CGRectMake(0, 0, 300, 100);
+  XCTAssertTrue(feq(webView.scrollView.contentInset.bottom, -insetToAdjust.bottom));
+  XCTAssertTrue(CGRectEqualToRect(webView.frame, CGRectMake(0, 0, 300, 100)));
+}
+
+- (void)testSetInspectable API_AVAILABLE(ios(16.4), macos(13.3)) {
+  FWFWebView *mockWebView = OCMClassMock([FWFWebView class]);
+
+  FWFInstanceManager *instanceManager = [[FWFInstanceManager alloc] init];
+  [instanceManager addDartCreatedInstance:mockWebView withIdentifier:0];
+
+  FWFWebViewHostApiImpl *hostAPI = [[FWFWebViewHostApiImpl alloc]
+      initWithBinaryMessenger:OCMProtocolMock(@protocol(FlutterBinaryMessenger))
+              instanceManager:instanceManager];
+
+  FlutterError *error;
+  [hostAPI setInspectableForWebViewWithIdentifier:@0 inspectable:@YES error:&error];
+  OCMVerify([mockWebView setInspectable:YES]);
+  XCTAssertNil(error);
+}
+
+- (void)testCustomUserAgent {
+  FWFWebView *mockWebView = OCMClassMock([FWFWebView class]);
+
+  NSString *userAgent = @"str";
+  OCMStub([mockWebView customUserAgent]).andReturn(userAgent);
+
+  FWFInstanceManager *instanceManager = [[FWFInstanceManager alloc] init];
+  [instanceManager addDartCreatedInstance:mockWebView withIdentifier:0];
+
+  FWFWebViewHostApiImpl *hostAPI = [[FWFWebViewHostApiImpl alloc]
+      initWithBinaryMessenger:OCMProtocolMock(@protocol(FlutterBinaryMessenger))
+              instanceManager:instanceManager];
+
+  FlutterError *error;
+  XCTAssertEqualObjects([hostAPI customUserAgentForWebViewWithIdentifier:@0 error:&error],
+                        userAgent);
+  XCTAssertNil(error);
 }
 @end

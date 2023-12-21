@@ -20,11 +20,10 @@
   if (self) {
     _objectApi = [[FWFObjectFlutterApiImpl alloc] initWithBinaryMessenger:binaryMessenger
                                                           instanceManager:instanceManager];
-    if (@available(iOS 11.0, *)) {
-      self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
-      if (@available(iOS 13.0, *)) {
-        self.scrollView.automaticallyAdjustsScrollIndicatorInsets = NO;
-      }
+
+    self.scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
+    if (@available(iOS 13.0, *)) {
+      self.scrollView.automaticallyAdjustsScrollIndicatorInsets = NO;
     }
   }
   return self;
@@ -34,16 +33,15 @@
   [super setFrame:frame];
   // Prevents the contentInsets from being adjusted by iOS and gives control to Flutter.
   self.scrollView.contentInset = UIEdgeInsetsZero;
-  if (@available(iOS 11, *)) {
-    // Above iOS 11, adjust contentInset to compensate the adjustedContentInset so the sum will
-    // always be 0.
-    if (UIEdgeInsetsEqualToEdgeInsets(self.scrollView.adjustedContentInset, UIEdgeInsetsZero)) {
-      return;
-    }
-    UIEdgeInsets insetToAdjust = self.scrollView.adjustedContentInset;
-    self.scrollView.contentInset = UIEdgeInsetsMake(-insetToAdjust.top, -insetToAdjust.left,
-                                                    -insetToAdjust.bottom, -insetToAdjust.right);
+
+  // Adjust contentInset to compensate the adjustedContentInset so the sum will
+  // always be 0.
+  if (UIEdgeInsetsEqualToEdgeInsets(self.scrollView.adjustedContentInset, UIEdgeInsetsZero)) {
+    return;
   }
+  UIEdgeInsets insetToAdjust = self.scrollView.adjustedContentInset;
+  self.scrollView.contentInset = UIEdgeInsetsMake(-insetToAdjust.top, -insetToAdjust.left,
+                                                  -insetToAdjust.bottom, -insetToAdjust.right);
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
@@ -54,7 +52,7 @@
                                 keyPath:keyPath
                                  object:object
                                  change:change
-                             completion:^(NSError *error) {
+                             completion:^(FlutterError *error) {
                                NSAssert(!error, @"%@", error);
                              }];
 }
@@ -126,7 +124,7 @@
                                     request:(nonnull FWFNSUrlRequestData *)request
                                       error:
                                           (FlutterError *_Nullable __autoreleasing *_Nonnull)error {
-  NSURLRequest *urlRequest = FWFNSURLRequestFromRequestData(request);
+  NSURLRequest *urlRequest = FWFNativeNSURLRequestFromRequestData(request);
   if (!urlRequest) {
     *error = [FlutterError errorWithCode:@"FWFURLRequestParsingError"
                                  message:@"Failed instantiating an NSURLRequest."
@@ -136,10 +134,11 @@
   [[self webViewForIdentifier:identifier] loadRequest:urlRequest];
 }
 
-- (void)setUserAgentForWebViewWithIdentifier:(nonnull NSNumber *)identifier
-                                   userAgent:(nullable NSString *)userAgent
-                                       error:(FlutterError *_Nullable __autoreleasing *_Nonnull)
-                                                 error {
+- (void)setCustomUserAgentForWebViewWithIdentifier:(nonnull NSNumber *)identifier
+                                         userAgent:(nullable NSString *)userAgent
+                                             error:
+                                                 (FlutterError *_Nullable __autoreleasing *_Nonnull)
+                                                     error {
   [[self webViewForIdentifier:identifier] setCustomUserAgent:userAgent];
 }
 
@@ -192,11 +191,25 @@
          } else {
            flutterError = [FlutterError errorWithCode:@"FWFEvaluateJavaScriptError"
                                               message:@"Failed evaluating JavaScript."
-                                              details:FWFNSErrorDataFromNSError(error)];
+                                              details:FWFNSErrorDataFromNativeNSError(error)];
          }
 
          completion(returnValue, flutterError);
        }];
+}
+
+- (void)setInspectableForWebViewWithIdentifier:(NSNumber *)identifier
+                                   inspectable:(NSNumber *)inspectable
+                                         error:(FlutterError *_Nullable *_Nonnull)error {
+  if (@available(macOS 13.3, iOS 16.4, tvOS 16.4, *)) {
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 130300 || __IPHONE_OS_VERSION_MAX_ALLOWED >= 160400
+    [[self webViewForIdentifier:identifier] setInspectable:inspectable.boolValue];
+#endif
+  } else {
+    *error = [FlutterError errorWithCode:@"FWFUnsupportedVersionError"
+                                 message:@"setInspectable is only supported on versions 16.4+."
+                                 details:nil];
+  }
 }
 
 - (void)goBackForWebViewWithIdentifier:(nonnull NSNumber *)identifier
@@ -286,5 +299,12 @@
     titleForWebViewWithIdentifier:(nonnull NSNumber *)identifier
                             error:(FlutterError *_Nullable __autoreleasing *_Nonnull)error {
   return [[self webViewForIdentifier:identifier] title];
+}
+
+- (nullable NSString *)
+    customUserAgentForWebViewWithIdentifier:(nonnull NSNumber *)identifier
+                                      error:
+                                          (FlutterError *_Nullable __autoreleasing *_Nonnull)error {
+  return [[self webViewForIdentifier:identifier] customUserAgent];
 }
 @end

@@ -4,9 +4,6 @@
 
 import 'dart:async';
 import 'dart:io';
-// TODO(a14n): remove this import once Flutter 3.1 or later reaches stable (including flutter/flutter#104231)
-// ignore: unnecessary_import
-import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -27,9 +24,9 @@ const String _videoAssetKey =
 // TODO(stuartmorgan): Convert this to a local `HttpServer` that vends the
 // assets directly, https://github.com/flutter/flutter/issues/95420
 String getUrlForAssetAsNetworkSource(String assetKey) {
-  return 'https://github.com/flutter/plugins/blob/'
+  return 'https://github.com/flutter/packages/blob/'
       // This hash can be rolled forward to pick up newly-added assets.
-      'cb381ced070d356799dddf24aca38ce0579d3d7b'
+      '2e1673307ff7454aff40b47024eaed49a9e77e81'
       '/packages/video_player/video_player/example/'
       '$assetKey'
       '?raw=true';
@@ -60,8 +57,9 @@ void main() {
       'live stream duration != 0',
       (WidgetTester tester) async {
         final VideoPlayerController networkController =
-            VideoPlayerController.network(
-          'https://flutter.github.io/assets-for-api-docs/assets/videos/hls/bee.m3u8',
+            VideoPlayerController.networkUrl(
+          Uri.parse(
+              'https://flutter.github.io/assets-for-api-docs/assets/videos/hls/bee.m3u8'),
         );
         await networkController.initialize();
 
@@ -144,6 +142,8 @@ void main() {
         expect(controller.value.isPlaying, false);
         expect(controller.value.position, tenMillisBeforeEnd);
       },
+      // Flaky on web: https://github.com/flutter/flutter/issues/130147
+      skip: kIsWeb,
     );
 
     testWidgets(
@@ -233,8 +233,8 @@ void main() {
 
   group('network videos', () {
     setUp(() {
-      controller = VideoPlayerController.network(
-          getUrlForAssetAsNetworkSource(_videoAssetKey));
+      controller = VideoPlayerController.networkUrl(
+          Uri.parse(getUrlForAssetAsNetworkSource(_videoAssetKey)));
     });
 
     testWidgets(

@@ -107,7 +107,7 @@ class _ButterFlyAssetVideoInList extends StatelessWidget {
 
 /// A filler card to show the video in a list of scrolling contents.
 class _ExampleCard extends StatelessWidget {
-  const _ExampleCard({Key? key, required this.title}) : super(key: key);
+  const _ExampleCard({required this.title});
 
   final String title;
 
@@ -121,21 +121,26 @@ class _ExampleCard extends StatelessWidget {
             leading: const Icon(Icons.airline_seat_flat_angled),
             title: Text(title),
           ),
-          ButtonBar(
-            children: <Widget>[
-              TextButton(
-                child: const Text('BUY TICKETS'),
-                onPressed: () {
-                  /* ... */
-                },
-              ),
-              TextButton(
-                child: const Text('SELL TICKETS'),
-                onPressed: () {
-                  /* ... */
-                },
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: OverflowBar(
+              alignment: MainAxisAlignment.end,
+              spacing: 8.0,
+              children: <Widget>[
+                TextButton(
+                  child: const Text('BUY TICKETS'),
+                  onPressed: () {
+                    /* ... */
+                  },
+                ),
+                TextButton(
+                  child: const Text('SELL TICKETS'),
+                  onPressed: () {
+                    /* ... */
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -217,8 +222,9 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.network(
-      'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+    _controller = VideoPlayerController.networkUrl(
+      Uri.parse(
+          'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4'),
       closedCaptionFile: _loadCaptions(),
       videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
     );
@@ -265,8 +271,7 @@ class _BumbleBeeRemoteVideoState extends State<_BumbleBeeRemoteVideo> {
 }
 
 class _ControlsOverlay extends StatelessWidget {
-  const _ControlsOverlay({Key? key, required this.controller})
-      : super(key: key);
+  const _ControlsOverlay({required this.controller});
 
   static const List<Duration> _exampleCaptionOffsets = <Duration>[
     Duration(seconds: -10),

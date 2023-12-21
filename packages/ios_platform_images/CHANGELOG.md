@@ -1,3 +1,21 @@
+## 0.2.3
+
+* Migrates to a Swift implementation.
+
+## 0.2.2+3
+
+* Converts platform communication to Pigeon.
+
+## 0.2.2+2
+
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
+* Aligns Dart and Flutter SDK constraints.
+
+## 0.2.2+1
+
+* Updates links for the merge of flutter/plugins into flutter/packages.
+
 ## 0.2.2
 
 * Updates minimum version to iOS 11.

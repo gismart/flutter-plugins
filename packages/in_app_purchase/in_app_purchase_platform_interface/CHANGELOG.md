@@ -1,5 +1,21 @@
-## NEXT
+## 1.3.6
 
+* Updates documentation reference of `finishPurchase` to `completePurchase`.
+
+## 1.3.5
+
+* Adds pub topics to package metadata.
+* Updates minimum supported SDK version to Flutter 3.7/Dart 2.19.
+
+## 1.3.4
+
+* Removes obsolete null checks on non-nullable values.
+* Updates minimum Flutter version to 3.3.
+* Aligns Dart and Flutter SDK constraints.
+
+## 1.3.3
+
+* Updates links for the merge of flutter/plugins into flutter/packages.
 * Updates minimum Flutter version to 3.0.
 
 ## 1.3.2
